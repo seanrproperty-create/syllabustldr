@@ -876,6 +876,26 @@
   // caller must be able to fall back to a text-only share in that case.
   const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 
+  // The card's sections (.card-block) fade/slide in via staggered CSS
+  // animations (up to ~0.8s total). If html2canvas snapshots mid-animation,
+  // it captures those blocks at opacity 0 — invisible. Wait for any running
+  // animations on the card to finish, with a fixed floor as a cross-browser
+  // safety net (older/mobile WebKit's getAnimations({subtree:true}) support
+  // is inconsistent), before ever calling html2canvas.
+  async function waitForCardAnimationsToSettle() {
+    const floor = new Promise(resolve => setTimeout(resolve, 850));
+    let animsDone = Promise.resolve();
+    try {
+      if (summaryCard && typeof summaryCard.getAnimations === 'function') {
+        const anims = summaryCard.getAnimations({ subtree: true });
+        animsDone = Promise.all(anims.map(a => a.finished.catch(() => {})));
+      }
+    } catch (err) {
+      // getAnimations({subtree:true}) unsupported — the fixed floor below still applies.
+    }
+    await Promise.all([floor, animsDone]);
+  }
+
   async function captureCardImage() {
     if (!summaryCard) return null;
     const ctaFooter = document.getElementById('card-cta-footer');
@@ -884,6 +904,7 @@
       if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
       if (typeof html2canvas === 'undefined') return null;
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      await waitForCardAnimationsToSettle();
       const canvas = await html2canvas(summaryCard, {
         backgroundColor: '#09090b',
         useCORS: true,
