@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CQT3CXF341');
+</script>
+
+<!--
+  GOOGLE ADSENSE — not active yet.
+  Once your AdSense application is approved:
+  1. Replace ca-pub-XXXXXXXXXXXXXXXX below with your real publisher ID and
+     uncomment the <script> tag.
+  2. Add an ads.txt file at the site root (syllabustldr.com/ads.txt) containing:
+     google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+     (Cloudflare Pages: drop ads.txt in the same folder as this index.html.)
+  3. Auto ads (recommended for a single-page tool like this) will place units
+     automatically — no manual <ins class="adsbygoogle"> blocks needed here.
+     If you'd rather hand-place a unit, ask and I'll add a reserved slot in
+     the output screen, below the summary card, so it never pushes on the
+     shareable card itself.
+-->
+<!--
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+-->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyllabusTLDR — Instantly Simplify Your Course Outline</title>
+<meta name="description" content="Drop your syllabus, get a pocket-sized dashboard. Grade weights, deadlines, and calendar sync in 2 seconds. 100% free, no login.">
+
+<!--
+  Static, purged, minified Tailwind build (generated from this file's actual
+  class usage) instead of the Play CDN script. The Play CDN ships a full JIT
+  compiler and recompiles styles in-browser on every load — Tailwind's own
+  docs say it isn't meant for production. This is a ~21KB stylesheet with
+  zero runtime compilation. Regenerate if you add new utility classes:
+    npx tailwindcss -i input.css -o tailwind.min.css --minify
+    (content: ["./index.html"])
+-->
+<link rel="stylesheet" href="tailwind.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!--
+  PDF.js and html2canvas are NOT loaded here. Both are only needed after a
+  user action (dropping a PDF / tapping Share), so they're lazy-loaded from
+  JS the first time they're actually needed — see loadScriptOnce() below.
+  This keeps the initial page load free of ~250KB+ of JS most visitors never
+  trigger (anyone who just pastes text and never shares downloads neither).
+-->
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .font-display { font-family: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 999px; }
+
+  .fade-in { animation: fadeIn .5s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .weight-bar-fill { transition: width 1s cubic-bezier(.22,1,.36,1); }
+  #toast { transition: opacity .25s ease, transform .25s ease; }
+
+  #summary-card .card-block { animation: blockIn .55s cubic-bezier(.22,1,.36,1) both; }
+  #summary-card .card-block:nth-of-type(1) { animation-delay: .05s; }
+  #summary-card .card-block:nth-of-type(2) { animation-delay: .12s; }
+  #summary-card .card-block:nth-of-type(3) { animation-delay: .19s; }
+  #summary-card .card-block:nth-of-type(4) { animation-delay: .26s; }
+  #summary-card .card-block:nth-of-type(5) { animation-delay: .33s; }
+  @keyframes blockIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @keyframes spinReverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+  .animate-spin-reverse { animation: spinReverse 1.6s linear infinite; }
+
+  @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .shimmer-sweep::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.16) 50%, transparent 70%);
+    animation: shimmer 2.6s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+  .pulse-dot { animation: pulseGlow 1.8s ease-in-out infinite; }
+
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  .btn-press { transition: transform .15s cubic-bezier(.22,1,.36,1), box-shadow .15s ease, filter .15s ease; }
+  .btn-press:active { transform: scale(.96); }
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+    <!-- AMBIENT BACKGROUND -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-24 -left-20 w-80 h-80 bg-orange-600/25 rounded-full blur-[100px]"></div>
+        <div class="absolute top-1/3 -right-24 w-72 h-72 bg-fuchsia-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 left-1/4 w-64 h-64 bg-pink-600/10 rounded-full blur-[90px]"></div>
+        <div class="absolute inset-0 noise-overlay opacity-[0.04]"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="border-b border-zinc-800/80 bg-zinc-950/60 backdrop-blur-xl sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-br from-orange-500 to-pink-600 text-white p-2 rounded-xl shadow-lg shadow-orange-600/30">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold tracking-tight text-xl bg-gradient-to-r from-orange-400 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent">SyllabusTLDR</h1>
+                    <p class="text-xs text-zinc-500">Zero logins • 2-second summary</p>
+                </div>
+            </div>
+            <span class="text-xs font-semibold bg-lime-400/10 text-lime-300 px-2.5 py-1 rounded-full border border-lime-400/25 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-lime-400 pulse-dot"></span>
+                100% Free
+            </span>
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE -->
+    <main class="flex-grow px-4 py-6 max-w-md mx-auto w-full relative z-10">
+
+        <!-- SCREEN 1: INPUT PANELS -->
+        <div id="input-screen" class="space-y-6 fade-in">
+            <div class="text-center space-y-2">
+                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Drop the <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Text Wall.</span></h2>
+                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Convert complex multi-page syllabi into a clean, pocket-sized dashboard instantly.</p>
+            </div>
+
+            <!-- PDF Upload Container -->
+            <div id="drop-zone" class="border-2 border-dashed border-zinc-700 hover:border-orange-500 bg-zinc-900/40 rounded-3xl p-7 text-center transition-colors duration-200 cursor-pointer relative group">
+                <input type="file" id="pdf-file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer">
+                <div class="space-y-3">
+                    <div id="drop-icon-wrap" class="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto group-hover:bg-gradient-to-br group-hover:from-orange-500 group-hover:to-pink-600 transition-all duration-200">
+                        <i class="fa-solid fa-file-pdf text-xl text-zinc-400 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <div>
+                        <p id="drop-title" class="font-bold text-sm">Upload Syllabus PDF</p>
+                        <p id="drop-subtitle" class="text-xs text-zinc-500 mt-1">Tap to select or drop file here</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center my-4">
+                <div class="flex-grow border-t border-zinc-800"></div>
+                <span class="px-3 text-[11px] text-zinc-500 font-semibold uppercase tracking-widest">OR PASTE TEXT</span>
+                <div class="flex-grow border-t border-zinc-800"></div>
+            </div>
+
+            <!-- Paste Input Area -->
+            <div class="space-y-3">
+                <textarea id="paste-box" rows="5" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3.5 text-sm focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 placeholder-zinc-600 text-zinc-200 transition" placeholder="Paste your messy syllabus text block here..."></textarea>
+                <button id="simplify-btn" class="btn-press w-full bg-gradient-to-r from-orange-500 to-pink-600 hover:brightness-110 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25">
+                    <span>Simplify Instantly</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+                <p id="input-error" class="hidden text-xs text-rose-400 text-center font-medium"></p>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: LOADING -->
+        <div id="loading-screen" class="hidden py-14 text-center space-y-5">
+            <div class="relative w-20 h-20 mx-auto">
+                <div class="absolute inset-0 rounded-full border-4 border-zinc-800"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-orange-500 border-r-pink-500 animate-spin"></div>
+                <div class="absolute inset-2 rounded-full border-4 border-transparent border-b-fuchsia-500 animate-spin-reverse"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-lg bg-gradient-to-br from-orange-400 to-pink-500 bg-clip-text text-transparent"></i>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <p class="font-display font-bold text-lg text-zinc-100">Shredding the policy clauses...</p>
+                <p class="text-xs text-zinc-500">Isolating grade weights, rules and due dates</p>
+                <div class="w-40 h-1.5 mx-auto bg-zinc-800 rounded-full overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 shimmer-sweep"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: DASHBOARD OUTPUT -->
+        <div id="output-screen" class="hidden space-y-6">
+            <div class="grid grid-cols-2 gap-2.5">
+                <button id="calendar-btn" class="btn-press bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-lime-400"></i>
+                    Sync to Calendar (.ics)
+                </button>
+                <button id="share-btn" class="btn-press bg-gradient-to-r from-orange-500 to-pink-600 hover:brightness-110 text-white px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-pink-600/20">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    Share Smart-Card
+                </button>
+            </div>
+
+            <!-- CARD FRAMEWORK -->
+            <div id="summary-card" class="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl shadow-black/40 relative">
+                <div class="h-1 bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500"></div>
+
+                <div class="card-block p-4 border-b border-zinc-800/80 bg-gradient-to-b from-zinc-800/30 to-transparent">
+                    <span class="text-[10px] font-bold tracking-[.15em] text-orange-400 uppercase">Course Snapshot</span>
+                    <h3 id="render-course-title" class="font-display text-lg font-bold text-white mt-0.5 tracking-tight">Loading Title...</h3>
+                    <p id="render-course-meta" class="text-xs text-zinc-400 mt-1 font-medium"></p>
+                </div>
+
+                <!-- Grade Weight Breakdown -->
+                <div class="card-block p-4 border-b border-zinc-800/80 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-orange-500/15 flex items-center justify-center">
+                            <i class="fa-solid fa-chart-pie text-orange-400 text-[10px]"></i>
+                        </span>
+                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Grade Weight Breakdown</span>
+                    </div>
+                    <div id="render-grades" class="space-y-3"></div>
+                </div>
+
+                <!-- Core Milestones & Deadlines -->
+                <div class="card-block p-4 border-b border-zinc-800/80 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-lime-400/15 flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-days text-lime-400 text-[10px]"></i>
+                        </span>
+                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Core Milestones &amp; Deadlines</span>
+                    </div>
+                    <div id="render-deadlines" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Late Policies & Contact -->
+                <div class="card-block p-4 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-amber-400/15 flex items-center justify-center">
+                            <i class="fa-solid fa-user-tie text-amber-400 text-[10px]"></i>
+                        </span>
+                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Late Policies &amp; Contact</span>
+                    </div>
+                    <div id="render-policy" class="space-y-2.5"></div>
+                </div>
+
+                <!-- VIRAL BANNER (unremovable) -->
+                <div class="relative overflow-hidden bg-gradient-to-r from-orange-500 via-pink-600 to-fuchsia-600 px-5 py-4 flex items-center justify-between shimmer-sweep">
+                    <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
+                    <div class="relative">
+                        <p class="font-display text-[13px] font-bold text-white tracking-tight leading-tight">Simplified by SyllabusTLDR.com</p>
+                        <p class="text-[10.5px] text-white/85 font-medium mt-0.5">Skip the text wall. Screenshot &amp; share ✂️</p>
+                    </div>
+                    <div class="relative w-9 h-9 rounded-full bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                        <i class="fa-solid fa-bolt text-white text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button id="reset-btn" class="btn-press w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-rotate-left text-xs"></i>
+                Clear and summarize another syllabus
+            </button>
+        </div>
+    </main>
+
+    <!-- TOAST -->
+    <div id="toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800/95 backdrop-blur-md border border-zinc-700 text-zinc-100 text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-2xl z-50 opacity-0"></div>
+
+    <!-- FOOTER -->
+    <footer class="px-4 py-4 text-center relative z-10">
+        <div class="flex items-center justify-center gap-3 mb-2 text-[11px]">
+            <a href="/terms-of-service.html" class="text-zinc-600 hover:text-zinc-400 transition">Terms of Service</a>
+            <span class="text-zinc-800">•</span>
+            <a href="/privacy-policy.html" class="text-zinc-600 hover:text-zinc-400 transition">Privacy Policy</a>
+        </div>
+        <p class="text-[11px] text-zinc-600">© 2026 SyllabusTLDR • Built for fast mobile execution.</p>
+    </footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------
+  // STATE
+  // ---------------------------------------------------------------------
+  let lastParsed = null; // { course, grades, deadlines, policy }
+
+  // ---------------------------------------------------------------------
+  // DOM REFS
+  // ---------------------------------------------------------------------
+  const inputScreen = document.getElementById('input-screen');
+  const loadingScreen = document.getElementById('loading-screen');
+  const outputScreen = document.getElementById('output-screen');
+  const pdfFileInput = document.getElementById('pdf-file');
+  const dropZone = document.getElementById('drop-zone');
+  const dropTitle = document.getElementById('drop-title');
+  const dropSubtitle = document.getElementById('drop-subtitle');
+  const pasteBox = document.getElementById('paste-box');
+  const simplifyBtn = document.getElementById('simplify-btn');
+  const inputError = document.getElementById('input-error');
+  const calendarBtn = document.getElementById('calendar-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const toast = document.getElementById('toast');
+  const summaryCard = document.getElementById('summary-card');
+
+  // ---------------------------------------------------------------------
+  // UTILITIES
+  // ---------------------------------------------------------------------
+
+  // Loads an external <script> on first use and caches the in-flight/finished
+  // promise so repeat calls (e.g. sharing twice) don't re-fetch it. Keeps
+  // PDF.js and html2canvas out of the initial page load entirely.
+  const _scriptCache = {};
+  function loadScriptOnce(src) {
+    if (_scriptCache[src]) return _scriptCache[src];
+    _scriptCache[src] = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = () => { delete _scriptCache[src]; reject(new Error('Failed to load ' + src)); };
+      document.head.appendChild(s);
+    });
+    return _scriptCache[src];
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function showToast(msg, ms) {
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.classList.add('hidden'), 250);
+    }, ms || 2600);
+  }
+
+  function switchScreen(name) {
+    inputScreen.classList.toggle('hidden', name !== 'input');
+    loadingScreen.classList.toggle('hidden', name !== 'loading');
+    outputScreen.classList.toggle('hidden', name !== 'output');
+    if (name === 'output') outputScreen.classList.add('fade-in');
+  }
+
+  // ---------------------------------------------------------------------
+  // PARSING ENGINE
+  // ---------------------------------------------------------------------
+  const MONTH_MAP = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, sept:8, oct:9, nov:10, dec:11 };
+
+  function titleCaseWord(w) {
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }
+
+  function extractCourseInfo(text) {
+    const termMatch = text.match(/\b(Fall|Spring|Summer|Winter)\s+(20\d{2})\b/i);
+    const term = termMatch ? `${titleCaseWord(termMatch[1])} ${termMatch[2]}` : '';
+    const termYear = termMatch ? parseInt(termMatch[2], 10) : null;
+
+    const codeMatch = text.match(/\b([A-Z]{2,5})[-\s](\d{2,4}[A-Z]?)\b/);
+    const code = codeMatch ? `${codeMatch[1]}-${codeMatch[2]}` : '';
+
+    let title = '';
+    const patternPrefixed = text.match(/\b((?:Introduction to|Principles of|Fundamentals of|Foundations of|Survey of|Topics in)\s+[A-Z][A-Za-z&,'\s]{2,60})/);
+    if (patternPrefixed) {
+      title = patternPrefixed[1].split(/\n|\.{2,}|\s{3,}/)[0].trim();
+    }
+
+    if (!title && codeMatch) {
+      const lineRegex = new RegExp(codeMatch[0].replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '[:\\-–\\s]+([A-Z][A-Za-z&,\'\\s]{3,60}?)(?=\\n|\\d|\\s{3,}|\\s+(?:Grading|Breakdown|Instructor|Professor|Office|Semester|Credits|Schedule|Syllabus|Contact|Dates|Participation|Assignment)\\b|$)');
+      const m = text.match(lineRegex);
+      if (m) title = m[1].split(/\n|\.{2,}|\s{3,}/)[0].trim();
+    }
+
+    if (!title) {
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      for (const line of lines.slice(0, 20)) {
+        if (line.length > 6 && line.length < 70 &&
+            /^[A-Z]/.test(line) &&
+            !/office|instructor|professor|email|phone|room|syllabus|university|college|department/i.test(line) &&
+            /[a-z]/.test(line)) {
+          title = line;
+          break;
+        }
+      }
+    }
+
+    title = (title || 'Untitled Course').replace(/\s{2,}/g, ' ').replace(/[.,;:\-–\s]+$/, '').trim();
+
+    return { code, title: title || 'Untitled Course', term, termYear };
+  }
+
+  const GRADE_KEYWORDS = [
+    'Final Exam', 'Midterm Exam', 'Midterm', 'Exam', 'Quizzes', 'Quiz', 'Projects', 'Project',
+    'Assignments', 'Assignment', 'Homework', 'Participation', 'Attendance',
+    'Papers', 'Paper', 'Labs', 'Lab', 'Presentations', 'Presentation', 'Discussion', 'Essays', 'Essay'
+  ];
+
+  const CATEGORY_NORMALIZE = {
+    'Final Exam': 'Final Exam', 'Midterm Exam': 'Midterm', 'Midterm': 'Midterm', 'Exam': 'Exams',
+    'Quizzes': 'Quizzes', 'Quiz': 'Quizzes',
+    'Projects': 'Projects', 'Project': 'Projects',
+    'Assignments': 'Assignments', 'Assignment': 'Assignments',
+    'Homework': 'Homework', 'Participation': 'Participation', 'Attendance': 'Attendance',
+    'Papers': 'Papers', 'Paper': 'Papers', 'Labs': 'Labs', 'Lab': 'Labs',
+    'Presentations': 'Presentations', 'Presentation': 'Presentations',
+    'Discussion': 'Discussion', 'Essays': 'Essays', 'Essay': 'Essays'
+  };
+
+  // Longest phrases first so "Final Exam" wins over the bare "Exam" alternative.
+  const GRADE_KEYWORD_RE = new RegExp(
+    '\\b(' + GRADE_KEYWORDS.slice().sort((a, b) => b.length - a.length).map(k => k.replace(/\s/g, '\\s+')).join('|') + ')\\b',
+    'gi'
+  );
+  const LATE_NOISE_RE = /late|per\s*day|penalt|off\b/i;
+
+  function toKeywordCase(raw) {
+    return raw.replace(/\s+/g, ' ').trim().split(' ').map(titleCaseWord).join(' ');
+  }
+
+  function extractGradeWeights(text) {
+    const lines = text.split('\n');
+    const found = [];
+    const seenCats = new Set();
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || found.length >= 4) break;
+
+      // Ignore percentages that describe a late-penalty ("5% per day late"),
+      // not a grade category weight.
+      const pctMatches = [...line.matchAll(/(\d{1,3})\s?%/g)].filter(pm => {
+        const before = line.slice(Math.max(0, pm.index - 25), pm.index);
+        const after = line.slice(pm.index, Math.min(line.length, pm.index + 25));
+        return !LATE_NOISE_RE.test(before) && !LATE_NOISE_RE.test(after);
+      });
+      if (!pctMatches.length) continue;
+
+      // Keyword-primary pairing: each keyword looks for ITS OWN percentage,
+      // preferring the nearest one that FOLLOWS it (the dominant "Category:
+      // X%" / "Category X%" convention), falling back to a close preceding
+      // one only if nothing suitable follows. This correctly skips untracked
+      // categories sitting in between (e.g. "Portfolio 40%, Participation
+      // 20%, Final Project 40%" — Portfolio isn't a tracked keyword, so its
+      // 40% is never claimed, and Participation still finds its own 20%).
+      const kwMatches = [...line.matchAll(GRADE_KEYWORD_RE)];
+      if (!kwMatches.length) continue;
+      const usedPct = new Set();
+
+      for (const km of kwMatches) {
+        if (found.length >= 4) break;
+        const kmEnd = km.index + km[0].length;
+        let best = null, bestIdx = -1, bestDist = Infinity;
+        pctMatches.forEach((pm, i) => {
+          if (usedPct.has(i) || pm.index < kmEnd) return;
+          const dist = pm.index - kmEnd;
+          if (dist < bestDist) { bestDist = dist; best = pm; bestIdx = i; }
+        });
+        if (!best || bestDist > 40) {
+          pctMatches.forEach((pm, i) => {
+            if (usedPct.has(i) || pm.index >= kmEnd) return;
+            const dist = km.index - (pm.index + pm[0].length);
+            if (dist >= 0 && dist < 15 && dist < bestDist) { bestDist = dist; best = pm; bestIdx = i; }
+          });
+        }
+        if (!best) continue;
+        usedPct.add(bestIdx);
+        const pm = best;
+        const normKey = toKeywordCase(km[1]);
+        const cat = CATEGORY_NORMALIZE[normKey] || normKey;
+        if (seenCats.has(cat)) continue;
+        const pct = parseInt(pm[1], 10);
+        if (pct > 0 && pct <= 100) {
+          found.push({ label: cat, weight: pct });
+          seenCats.add(cat);
+        }
+      }
+    }
+    return found.slice(0, 4);
+  }
+
+  const DEADLINE_FLAGS = ['Due', 'Submission', 'Submit', 'Deadline', 'Test', 'Exam', 'Midterm', 'Final', 'Quiz', 'Project', 'Presentation', 'Paper'];
+  const FLAG_NORMALIZE = {
+    Due: 'Due', Submission: 'Submission', Submit: 'Submission', Deadline: 'Due',
+    Test: 'Test', Exam: 'Exam', Midterm: 'Midterm', Final: 'Final', Quiz: 'Quiz',
+    Project: 'Project Due', Presentation: 'Presentation', Paper: 'Paper Due'
+  };
+
+  const FLAG_RE = new RegExp('\\b(' + DEADLINE_FLAGS.join('|') + ')\\b', 'i');
+
+  function flagToLabel(rawFlag) {
+    const key = titleCaseWord(rawFlag);
+    return FLAG_NORMALIZE[key] || key;
+  }
+
+  function parseDateMatch(m, isNumeric, defaultYear) {
+    if (isNumeric) {
+      const month = parseInt(m[1], 10) - 1;
+      const day = parseInt(m[2], 10);
+      if (month < 0 || month > 11 || day < 1 || day > 31) return null;
+      let year = defaultYear;
+      if (m[3]) year = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
+      const d = new Date(year, month, day);
+      if (isNaN(d.getTime())) return null;
+      return { dateObj: d, display: `${m[1]}/${m[2]}`, sortKey: d.getTime(), icsEligible: true };
+    }
+    const monKey = m[1].slice(0, 3).toLowerCase();
+    const month = MONTH_MAP[monKey];
+    if (month === undefined) return null;
+    const day = parseInt(m[2], 10);
+    const year = m[3] ? parseInt(m[3], 10) : defaultYear;
+    const d = new Date(year, month, day);
+    if (isNaN(d.getTime())) return null;
+    return { dateObj: d, display: `${titleCaseWord(m[1])} ${day}`, sortKey: d.getTime(), icsEligible: true };
+  }
+
+  // "Week 4" style references have no absolute calendar date, so they're shown
+  // in the dashboard but excluded from .ics export (which requires a real date).
+  // They sort after all concrete dates, ordered by week number.
+  function parseWeekMatch(m) {
+    const weekNum = parseInt(m[1], 10);
+    if (!weekNum) return null;
+    return { dateObj: null, display: `Week ${weekNum}`, sortKey: 1e15 + weekNum, icsEligible: false };
+  }
+
+  function extractDeadlines(text, defaultYear) {
+    const monthNames = 'Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t)?(?:ember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?';
+    const monthDateRe = new RegExp(`\\b(${monthNames})\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s*(\\d{4}))?\\b`, 'i');
+    const numDateRe = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/;
+    const weekRe = /\bWeek\s+(\d{1,2})\b/i;
+    const results = [];
+
+    // Strategy 1: line-scoped, nearest-neighbor pairing. Find every date and
+    // every actionable flag word on a line, then pair each date with whichever
+    // flag sits closest to it by character distance. This handles the common
+    // one-event-per-line syllabus format ("Sept 25 - Midterm Exam") as well as
+    // lines/blobs that pack multiple dates together, without letting a date
+    // pick up a flag word from an unrelated event.
+    const globalFlagRe = new RegExp(FLAG_RE.source, 'gi');
+    const globalMonthLineRe = new RegExp(monthDateRe.source, 'gi');
+    const globalNumLineRe = new RegExp(numDateRe.source, 'g');
+    const globalWeekLineRe = new RegExp(weekRe.source, 'gi');
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const flagMatches = [...line.matchAll(globalFlagRe)];
+      if (!flagMatches.length) continue;
+
+      const dateMatches = [];
+      let dm;
+      while ((dm = globalMonthLineRe.exec(line)) !== null) {
+        const parsed = parseDateMatch(dm, false, defaultYear);
+        if (parsed) dateMatches.push({ idx: dm.index, parsed });
+      }
+      while ((dm = globalNumLineRe.exec(line)) !== null) {
+        const parsed = parseDateMatch(dm, true, defaultYear);
+        if (parsed) dateMatches.push({ idx: dm.index, parsed });
+      }
+      while ((dm = globalWeekLineRe.exec(line)) !== null) {
+        const parsed = parseWeekMatch(dm);
+        if (parsed) dateMatches.push({ idx: dm.index, parsed });
+      }
+      if (!dateMatches.length) continue;
+
+      for (const dateHit of dateMatches) {
+        let nearest = null;
+        let nearestDist = Infinity;
+        for (const fm of flagMatches) {
+          const dist = Math.abs(fm.index - dateHit.idx);
+          if (dist < nearestDist) { nearestDist = dist; nearest = fm; }
+        }
+        if (!nearest || nearestDist > 60) continue; // too far apart to be related
+        results.push({ ...dateHit.parsed, label: flagToLabel(nearest[1]) });
+      }
+    }
+
+    // Strategy 2 (fallback): the document has no reliable line breaks (e.g. a
+    // single pasted blob). Look for a flag word immediately following each date
+    // within a short, forward-biased window instead of a wide symmetric one.
+    if (!results.length) {
+      const globalMonthRe = new RegExp(monthDateRe.source, 'gi');
+      const globalNumRe = new RegExp(numDateRe.source, 'g');
+      const globalWeekRe = new RegExp(weekRe.source, 'gi');
+      const scan = (re, kind) => {
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          const parsed = kind === 'week' ? parseWeekMatch(m) : parseDateMatch(m, kind === 'numeric', defaultYear);
+          if (!parsed) continue;
+          const after = text.slice(m.index + m[0].length, m.index + m[0].length + 45);
+          const before = text.slice(Math.max(0, m.index - 20), m.index);
+          const flagMatch = after.match(FLAG_RE) || before.match(FLAG_RE);
+          if (!flagMatch) continue;
+          results.push({ ...parsed, label: flagToLabel(flagMatch[1]) });
+        }
+      };
+      scan(globalMonthRe, 'month');
+      scan(globalNumRe, 'numeric');
+      scan(globalWeekRe, 'week');
+    }
+
+    const seen = new Set();
+    const deduped = [];
+    for (const r of results) {
+      const key = (r.dateObj ? r.dateObj.toDateString() : r.display) + '|' + r.label;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      deduped.push(r);
+    }
+    deduped.sort((a, b) => a.sortKey - b.sortKey);
+    return deduped.slice(0, 3);
+  }
+
+  function extractProfessorRules(text) {
+    const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.edu\b/);
+    const officeMatch = text.match(/Office\s*Hours?[:\s]+([^\n]{3,90})/i);
+    const lateMatch =
+      text.match(/([^.\n]{0,60}\blate\b[^.\n]{0,60}\b\d{1,3}\s?%[^.\n]{0,40})/i) ||
+      text.match(/(\d{1,3}\s?%\s*(?:per day|\/\s*day|penalty)[^.\n]{0,40})/i) ||
+      text.match(/([^.\n]{0,80}\blate\s+(?:work|submission|assignment)s?[^.\n]{0,80})/i);
+
+    return {
+      email: emailMatch ? emailMatch[0] : 'Refer to Professor',
+      officeHours: officeMatch ? officeMatch[1].trim().replace(/\s{2,}/g, ' ') : 'Refer to Professor',
+      latePolicy: lateMatch ? lateMatch[1].trim().replace(/\s{2,}/g, ' ') : 'Refer to Professor'
+    };
+  }
+
+  function parseSyllabus(rawText) {
+    const text = (rawText || '').replace(/\r/g, '');
+    const course = extractCourseInfo(text);
+    const defaultYear = course.termYear || new Date().getFullYear();
+    const grades = extractGradeWeights(text);
+    const deadlines = extractDeadlines(text, defaultYear);
+    const policy = extractProfessorRules(text);
+    return { course, grades, deadlines, policy };
+  }
+
+  // ---------------------------------------------------------------------
+  // RENDERING
+  // ---------------------------------------------------------------------
+  const BAR_COLORS = ['bg-gradient-to-r from-orange-500 to-orange-400', 'bg-gradient-to-r from-pink-500 to-rose-400', 'bg-gradient-to-r from-fuchsia-500 to-fuchsia-400', 'bg-gradient-to-r from-lime-400 to-lime-300'];
+
+  function renderDashboard(data) {
+    const { course, grades, deadlines, policy } = data;
+
+    document.getElementById('render-course-title').textContent = course.title;
+    const metaParts = [course.code, course.term].filter(Boolean);
+    document.getElementById('render-course-meta').textContent = metaParts.length ? metaParts.join(' • ') : 'Course details unavailable';
+
+    // Grades
+    const gradesEl = document.getElementById('render-grades');
+    if (grades.length) {
+      gradesEl.innerHTML = grades.map((g, i) => `
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-zinc-300">${escapeHtml(g.label)}</span>
+            <span class="text-xs font-black text-white">${g.weight}%</span>
+          </div>
+          <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="weight-bar-fill h-full ${BAR_COLORS[i % BAR_COLORS.length]} rounded-full" style="width:${Math.min(g.weight, 100)}%"></div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      gradesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Refer to Professor for exact grade weighting.</p>`;
+    }
+
+    // Deadlines
+    const deadlinesEl = document.getElementById('render-deadlines');
+    if (deadlines.length) {
+      deadlinesEl.innerHTML = deadlines.map(d => `
+        <div class="flex items-center gap-3">
+          <div class="w-14 shrink-0 text-center bg-zinc-800 border border-zinc-700/60 rounded-lg py-1.5">
+            <span class="text-[11px] font-black text-lime-300">${escapeHtml(d.display)}</span>
+          </div>
+          <span class="text-xs font-semibold text-zinc-300">${escapeHtml(d.label)}</span>
+        </div>
+      `).join('');
+    } else {
+      deadlinesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Refer to Professor for key dates.</p>`;
+    }
+
+    // Policy
+    const policyEl = document.getElementById('render-policy');
+    policyEl.innerHTML = `
+      <div class="flex items-start gap-3">
+        <i class="fa-solid fa-envelope text-zinc-500 text-xs mt-0.5 w-4"></i>
+        <span class="text-xs font-semibold text-zinc-300 break-all">${escapeHtml(policy.email)}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <i class="fa-solid fa-clock text-zinc-500 text-xs mt-0.5 w-4"></i>
+        <span class="text-xs font-semibold text-zinc-300">${escapeHtml(policy.officeHours)}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xs mt-0.5 w-4"></i>
+        <span class="text-xs font-semibold text-zinc-300">${escapeHtml(policy.latePolicy)}</span>
+      </div>
+    `;
+  }
+
+  // ---------------------------------------------------------------------
+  // PDF EXTRACTION
+  // ---------------------------------------------------------------------
+  const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  let pdfjsReadyPromise = null;
+  function ensurePdfJsLoaded() {
+    if (!pdfjsReadyPromise) {
+      pdfjsReadyPromise = loadScriptOnce(PDFJS_URL).then(() => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+      });
+    }
+    return pdfjsReadyPromise;
+  }
+
+  async function extractTextFromPDF(file) {
+    await ensurePdfJsLoaded();
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      let pageText = '';
+      let lastY = null;
+      for (const item of content.items) {
+        const y = item.transform ? item.transform[5] : null;
+        if (lastY !== null && y !== null && Math.abs(y - lastY) > 2) {
+          pageText += '\n';
+        } else if (pageText && !/[\s\n]$/.test(pageText)) {
+          pageText += ' ';
+        }
+        pageText += item.str;
+        if (y !== null) lastY = y;
+      }
+      fullText += pageText + '\n';
+    }
+    return fullText;
+  }
+
+  // ---------------------------------------------------------------------
+  // PIPELINE
+  // ---------------------------------------------------------------------
+  function runPipeline(text) {
+    if (!text || text.trim().length < 20) {
+      showInputError('Please provide more syllabus text — that looked too short to parse.');
+      return;
+    }
+    hideInputError();
+    switchScreen('loading');
+    setTimeout(() => {
+      try {
+        lastParsed = parseSyllabus(text);
+        renderDashboard(lastParsed);
+        switchScreen('output');
+      } catch (err) {
+        console.error(err);
+        switchScreen('input');
+        showInputError('Something went wrong parsing that document. Try pasting the text instead.');
+      }
+    }, 700);
+  }
+
+  function showInputError(msg) {
+    inputError.textContent = msg;
+    inputError.classList.remove('hidden');
+  }
+  function hideInputError() {
+    inputError.classList.add('hidden');
+  }
+
+  // ---------------------------------------------------------------------
+  // ICS EXPORT
+  // ---------------------------------------------------------------------
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function dateToICSDate(d) {
+    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  }
+
+  function generateICS(data) {
+    const { course } = data;
+    const deadlines = data.deadlines.filter(d => d.icsEligible && d.dateObj);
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}T${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}Z`;
+
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//SyllabusTLDR//Smart Card//EN',
+      'CALSCALE:GREGORIAN'
+    ];
+
+    deadlines.forEach((d, i) => {
+      const start = dateToICSDate(d.dateObj);
+      const endDate = new Date(d.dateObj);
+      endDate.setDate(endDate.getDate() + 1);
+      const end = dateToICSDate(endDate);
+      const summary = `${course.code ? course.code + ': ' : ''}${d.label}`;
+      lines.push(
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}-${i}@syllabustldr.com`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${start}`,
+        `DTEND;VALUE=DATE:${end}`,
+        `SUMMARY:${escapeICS(summary)}`,
+        `DESCRIPTION:${escapeICS('Simplified by SyllabusTLDR.com — Skip the text wall.')}`,
+        'END:VEVENT'
+      );
+    });
+
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  function escapeICS(str) {
+    return String(str).replace(/([,;])/g, '\\$1').replace(/\n/g, '\\n');
+  }
+
+  function downloadICS(data) {
+    const eligible = data.deadlines.filter(d => d.icsEligible && d.dateObj);
+    if (!eligible.length) {
+      const msg = data.deadlines.length
+        ? "Deadlines only reference week numbers — no exact dates to sync yet."
+        : "No specific dates found — nothing to sync yet.";
+      showToast(msg);
+      return;
+    }
+    const icsContent = generateICS(data);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const fileSlug = (data.course.code || data.course.title || 'syllabus').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    a.href = url;
+    a.download = `${fileSlug}-deadlines.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Calendar file downloaded — tap it to import.');
+  }
+
+  // ---------------------------------------------------------------------
+  // WEB SHARE
+  // ---------------------------------------------------------------------
+
+  // Renders the summary card to a PNG blob via html2canvas. Returns null if
+  // html2canvas isn't available or the capture fails for any reason — every
+  // caller must be able to fall back to a text-only share in that case.
+  const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+
+  async function captureCardImage() {
+    if (!summaryCard) return null;
+    try {
+      if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
+      if (typeof html2canvas === 'undefined') return null;
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const canvas = await html2canvas(summaryCard, {
+        backgroundColor: '#09090b',
+        useCORS: true,
+        scale: Math.min(window.devicePixelRatio || 2, 3),
+        logging: false
+      });
+      return await new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png'));
+    } catch (err) {
+      console.error('Card image capture failed:', err);
+      return null;
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function shareSmartCard(data) {
+    const topGrade = data.grades[0] ? `${data.grades[0].label} is ${data.grades[0].weight}% of your grade` : 'Grades summarized';
+    const nextDue = data.deadlines[0] ? `Next up: ${data.deadlines[0].label} on ${data.deadlines[0].display}` : 'Deadlines organized';
+    const shareText = `📚 ${data.course.title} — simplified in 2 seconds.\n${topGrade}. ${nextDue}.\n\nSkip the text wall:`;
+    const shareUrl = 'https://syllabustldr.com';
+    const fileSlug = (data.course.code || data.course.title || 'syllabus').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+
+    const originalBtnHTML = shareBtn.innerHTML;
+    shareBtn.disabled = true;
+    shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+    let imageBlob = null;
+    try {
+      imageBlob = await captureCardImage();
+    } finally {
+      shareBtn.disabled = false;
+      shareBtn.innerHTML = originalBtnHTML;
+    }
+    const imageFile = imageBlob ? new File([imageBlob], `${fileSlug}-smartcard.png`, { type: 'image/png' }) : null;
+
+    // Preferred path: native share sheet with the image attached.
+    if (imageFile && navigator.canShare && navigator.canShare({ files: [imageFile] })) {
+      try {
+        await navigator.share({ title: 'SyllabusTLDR', text: `${shareText} ${shareUrl}`, files: [imageFile] });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        // Some platforms reject file shares unpredictably — fall through to text-only share.
+      }
+    }
+
+    // Text-only native share (image capture failed, or this browser's share
+    // sheet doesn't support files).
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'SyllabusTLDR', text: shareText, url: shareUrl });
+        return;
+      } catch (err) {
+        if (err.name !== 'AbortError') showToast('Share cancelled.');
+        return;
+      }
+    }
+
+    // No Web Share API at all (most desktop browsers): download the image
+    // and copy the caption so it can be pasted alongside it manually.
+    if (imageFile) downloadBlob(imageFile, imageFile.name);
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        showToast(imageFile ? 'Image downloaded + caption copied — attach & paste to share!' : 'Sharing not supported here — copied caption instead!');
+      } catch {
+        showToast(imageFile ? 'Image downloaded — copying the caption failed.' : 'Unable to share on this device.');
+      }
+    } else {
+      showToast(imageFile ? 'Image downloaded to your device.' : 'Sharing not supported on this device.');
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // EVENT LISTENERS
+  // ---------------------------------------------------------------------
+  simplifyBtn.addEventListener('click', () => runPipeline(pasteBox.value));
+
+  pdfFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    await handlePDFFile(file);
+  });
+
+  ['dragover', 'dragenter'].forEach(evt => {
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-indigo-500');
+    });
+  });
+  ['dragleave', 'dragend'].forEach(evt => {
+    dropZone.addEventListener(evt, () => dropZone.classList.remove('border-indigo-500'));
+  });
+  dropZone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-indigo-500');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      showInputError('Please drop a .pdf file.');
+      return;
+    }
+    pdfFileInput.files = e.dataTransfer.files;
+    await handlePDFFile(file);
+  });
+
+  async function handlePDFFile(file) {
+    hideInputError();
+    dropTitle.textContent = 'Reading PDF…';
+    dropSubtitle.textContent = file.name;
+    try {
+      const text = await extractTextFromPDF(file);
+      dropTitle.textContent = 'Upload Syllabus PDF';
+      dropSubtitle.textContent = 'Tap to select or drop file here';
+      if (!text || text.trim().length < 20) {
+        showInputError('Could not read text from that PDF — try pasting the syllabus text instead.');
+        return;
+      }
+      runPipeline(text);
+    } catch (err) {
+      console.error(err);
+      dropTitle.textContent = 'Upload Syllabus PDF';
+      dropSubtitle.textContent = 'Tap to select or drop file here';
+      showInputError('Failed to read that PDF. Try pasting the syllabus text instead.');
+    }
+  }
+
+  calendarBtn.addEventListener('click', () => {
+    if (!lastParsed) return;
+    downloadICS(lastParsed);
+  });
+
+  shareBtn.addEventListener('click', () => {
+    if (!lastParsed) return;
+    shareSmartCard(lastParsed);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    pasteBox.value = '';
+    pdfFileInput.value = '';
+    lastParsed = null;
+    hideInputError();
+    switchScreen('input');
+  });
+
+})();
+</script>
+</body>
+</html>
