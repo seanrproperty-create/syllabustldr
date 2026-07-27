@@ -256,6 +256,23 @@
                         <i class="fa-solid fa-bolt text-white text-sm"></i>
                     </div>
                 </div>
+
+                <!--
+                  Decorative copy of the action buttons, baked into the
+                  shared/screenshotted image only. Hidden on the live page
+                  (the real, functional buttons already sit above the card)
+                  and briefly unhidden by captureCardImage() during capture.
+                -->
+                <div id="card-cta-footer" class="hidden grid grid-cols-2 gap-2 p-3 bg-zinc-950 border-t border-zinc-800/80">
+                    <div class="bg-zinc-900 border border-zinc-800 text-zinc-200 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-calendar-plus text-lime-400"></i>
+                        Sync to Calendar (.ics)
+                    </div>
+                    <div class="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-pink-600/20">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        Share Smart-Card
+                    </div>
+                </div>
             </div>
 
             <button id="reset-btn" class="btn-press w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
@@ -861,6 +878,8 @@
 
   async function captureCardImage() {
     if (!summaryCard) return null;
+    const ctaFooter = document.getElementById('card-cta-footer');
+    if (ctaFooter) ctaFooter.classList.remove('hidden');
     try {
       if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
       if (typeof html2canvas === 'undefined') return null;
@@ -875,6 +894,8 @@
     } catch (err) {
       console.error('Card image capture failed:', err);
       return null;
+    } finally {
+      if (ctaFooter) ctaFooter.classList.add('hidden');
     }
   }
 
