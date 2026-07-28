@@ -77,6 +77,14 @@
   #summary-card .card-block:nth-of-type(4) { animation-delay: .26s; }
   #summary-card .card-block:nth-of-type(5) { animation-delay: .33s; }
   @keyframes blockIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  /* html2canvas clones #summary-card into a fresh, hidden iframe to render the
+     screenshot. CSS animations on the clone restart from t=0 there, independent
+     of whatever already finished on the visible page — so simply waiting before
+     capturing doesn't help. This class, toggled on #summary-card only during
+     capture, force-settles every .card-block to its final state (and is carried
+     into the clone along with the rest of the stylesheet) so the capture never
+     races an animation. */
+  #summary-card.capturing .card-block { animation: none !important; opacity: 1 !important; transform: none !important; }
 
   @keyframes spinReverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
   .animate-spin-reverse { animation: spinReverse 1.6s linear infinite; }
@@ -877,34 +885,25 @@
   const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 
   // The card's sections (.card-block) fade/slide in via staggered CSS
-  // animations (up to ~0.8s total). If html2canvas snapshots mid-animation,
-  // it captures those blocks at opacity 0 — invisible. Wait for any running
-  // animations on the card to finish, with a fixed floor as a cross-browser
-  // safety net (older/mobile WebKit's getAnimations({subtree:true}) support
-  // is inconsistent), before ever calling html2canvas.
-  async function waitForCardAnimationsToSettle() {
-    const floor = new Promise(resolve => setTimeout(resolve, 850));
-    let animsDone = Promise.resolve();
-    try {
-      if (summaryCard && typeof summaryCard.getAnimations === 'function') {
-        const anims = summaryCard.getAnimations({ subtree: true });
-        animsDone = Promise.all(anims.map(a => a.finished.catch(() => {})));
-      }
-    } catch (err) {
-      // getAnimations({subtree:true}) unsupported — the fixed floor below still applies.
-    }
-    await Promise.all([floor, animsDone]);
-  }
-
+  // animations. html2canvas doesn't screenshot the live DOM directly — it
+  // clones #summary-card into a separate hidden iframe and renders that clone.
+  // The clone's animations restart from t=0 independent of the original
+  // element's timeline, so waiting for the animation to finish on the visible
+  // page does NOT stop html2canvas from capturing the clone mid-fade (verified
+  // by direct reproduction). The fix is to force-settle every .card-block to
+  // its final, fully-visible state via the .capturing class (see CSS above)
+  // for the duration of the capture — that override rides along with the
+  // rest of the stylesheet into html2canvas's clone, so there's no animation
+  // left to race in either copy.
   async function captureCardImage() {
     if (!summaryCard) return null;
     const ctaFooter = document.getElementById('card-cta-footer');
     if (ctaFooter) ctaFooter.classList.remove('hidden');
+    summaryCard.classList.add('capturing');
     try {
       if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
       if (typeof html2canvas === 'undefined') return null;
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      await waitForCardAnimationsToSettle();
       const canvas = await html2canvas(summaryCard, {
         backgroundColor: '#09090b',
         useCORS: true,
@@ -917,6 +916,7 @@
       return null;
     } finally {
       if (ctaFooter) ctaFooter.classList.add('hidden');
+      summaryCard.classList.remove('capturing');
     }
   }
 
