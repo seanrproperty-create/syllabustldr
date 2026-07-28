@@ -900,6 +900,31 @@
     const ctaFooter = document.getElementById('card-cta-footer');
     if (ctaFooter) ctaFooter.classList.remove('hidden');
     summaryCard.classList.add('capturing');
+
+    // Belt-and-suspenders on top of the .capturing CSS override: also set
+    // inline styles directly on each .card-block. Inline styles are
+    // captured verbatim when html2canvas clones the DOM, so this guarantees
+    // a settled state in the clone with no dependency on the stylesheet
+    // cascade being fully re-evaluated in time — some mobile WebKit builds
+    // are slow to re-render a CSS animation still in its pre-start
+    // (animation-delay) phase after the underlying `animation` property
+    // changes, which showed up as later, longer-delayed blocks (deadlines,
+    // policy) staying blank on a real phone even though the class fix alone
+    // worked in desktop testing.
+    const blocks = summaryCard.querySelectorAll('.card-block');
+    const prevInlineStyles = Array.from(blocks).map(el => el.getAttribute('style'));
+    blocks.forEach(el => {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+    // Force an immediate synchronous style/layout flush so both overrides
+    // above are fully committed before html2canvas starts reading geometry.
+    void summaryCard.offsetHeight;
+    // Give the browser a couple of paint cycles to settle before cloning —
+    // cheap insurance against any remaining render-timing edge cases.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
     try {
       if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
       if (typeof html2canvas === 'undefined') return null;
@@ -917,6 +942,11 @@
     } finally {
       if (ctaFooter) ctaFooter.classList.add('hidden');
       summaryCard.classList.remove('capturing');
+      blocks.forEach((el, i) => {
+        const prev = prevInlineStyles[i];
+        if (prev === null || prev === undefined) el.removeAttribute('style');
+        else el.setAttribute('style', prev);
+      });
     }
   }
 
