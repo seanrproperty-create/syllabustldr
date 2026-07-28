@@ -920,10 +920,11 @@
     });
     // Force an immediate synchronous style/layout flush so both overrides
     // above are fully committed before html2canvas starts reading geometry.
+    // (Deliberately NOT using requestAnimationFrame here: rAF callbacks are
+    // paused by the browser whenever the tab isn't in the foreground, which
+    // caused this to hang indefinitely in "Preparing…" during testing —
+    // reading offsetHeight forces a synchronous reflow with no such risk.)
     void summaryCard.offsetHeight;
-    // Give the browser a couple of paint cycles to settle before cloning —
-    // cheap insurance against any remaining render-timing edge cases.
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
     try {
       if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
@@ -973,7 +974,15 @@
     shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
     let imageBlob = null;
     try {
-      imageBlob = await captureCardImage();
+      // Guard against captureCardImage() ever hanging indefinitely (e.g. a
+      // stalled image-capture library load, or a browser pausing some async
+      // step while the tab is backgrounded) — if it doesn't resolve within
+      // a few seconds, fall back to a text-only share instead of leaving the
+      // button stuck on "Preparing…" forever.
+      imageBlob = await Promise.race([
+        captureCardImage(),
+        new Promise(resolve => setTimeout(() => resolve(null), 6000))
+      ]);
     } finally {
       shareBtn.disabled = false;
       shareBtn.innerHTML = originalBtnHTML;
