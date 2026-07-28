@@ -895,59 +895,92 @@
   // for the duration of the capture — that override rides along with the
   // rest of the stylesheet into html2canvas's clone, so there's no animation
   // left to race in either copy.
-  async function captureCardImage() {
-    if (!summaryCard) return null;
-    const ctaFooter = document.getElementById('card-cta-footer');
-    if (ctaFooter) ctaFooter.classList.remove('hidden');
-    summaryCard.classList.add('capturing');
-
-    // Belt-and-suspenders on top of the .capturing CSS override: also set
-    // inline styles directly on each .card-block. Inline styles are
-    // captured verbatim when html2canvas clones the DOM, so this guarantees
-    // a settled state in the clone with no dependency on the stylesheet
-    // cascade being fully re-evaluated in time — some mobile WebKit builds
-    // are slow to re-render a CSS animation still in its pre-start
-    // (animation-delay) phase after the underlying `animation` property
-    // changes, which showed up as later, longer-delayed blocks (deadlines,
-    // policy) staying blank on a real phone even though the class fix alone
-    // worked in desktop testing.
-    const blocks = summaryCard.querySelectorAll('.card-block');
+  function settleCardBlocks(root) {
+    root.classList.add('capturing'); // secondary CSS-level override, see .capturing rule above
+    const blocks = root.querySelectorAll('.card-block');
     const prevInlineStyles = Array.from(blocks).map(el => el.getAttribute('style'));
     blocks.forEach(el => {
       el.style.animation = 'none';
       el.style.opacity = '1';
       el.style.transform = 'none';
     });
-    // Force an immediate synchronous style/layout flush so both overrides
-    // above are fully committed before html2canvas starts reading geometry.
-    // (Deliberately NOT using requestAnimationFrame here: rAF callbacks are
-    // paused by the browser whenever the tab isn't in the foreground, which
-    // caused this to hang indefinitely in "Preparing…" during testing —
-    // reading offsetHeight forces a synchronous reflow with no such risk.)
-    void summaryCard.offsetHeight;
-
-    try {
-      if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
-      if (typeof html2canvas === 'undefined') return null;
-      if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      const canvas = await html2canvas(summaryCard, {
-        backgroundColor: '#09090b',
-        useCORS: true,
-        scale: Math.min(window.devicePixelRatio || 2, 3),
-        logging: false
-      });
-      return await new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png'));
-    } catch (err) {
-      console.error('Card image capture failed:', err);
-      return null;
-    } finally {
-      if (ctaFooter) ctaFooter.classList.add('hidden');
-      summaryCard.classList.remove('capturing');
+    void root.offsetHeight; // force a synchronous reflow so the overrides commit immediately
+    return () => {
+      root.classList.remove('capturing');
       blocks.forEach((el, i) => {
         const prev = prevInlineStyles[i];
         if (prev === null || prev === undefined) el.removeAttribute('style');
         else el.setAttribute('style', prev);
       });
+    };
+  }
+
+  const CAPTURE_SCALE = () => Math.min(window.devicePixelRatio || 2, 3);
+
+  // Captured as two separate html2canvas calls, then composited together on
+  // one canvas, rather than one call spanning the whole card with the CTA
+  // footer toggled visible mid-flight. Toggling a hidden block's visibility
+  // right before a single combined capture proved unreliable across
+  // browsers (the footer row was intermittently missing from the output on
+  // desktop even though everything above it rendered fine) — capturing the
+  // small, simple footer element on its own sidesteps whatever timing race
+  // caused that, since there's nothing else in that capture to race against.
+  async function captureCardImage() {
+    if (!summaryCard) return null;
+    const ctaFooter = document.getElementById('card-cta-footer');
+
+    // The card's sections fade in via CSS entrance animations; html2canvas
+    // clones the DOM into a separate hidden iframe where those animations
+    // restart from t=0, so it can capture a block mid-fade even if the
+    // animation already finished on the visible page. Force every block to
+    // its final, fully-visible state via inline styles (captured verbatim
+    // by html2canvas) for the duration of the capture.
+    const restoreCardBlocks = settleCardBlocks(summaryCard);
+
+    try {
+      if (typeof html2canvas === 'undefined') await loadScriptOnce(HTML2CANVAS_URL);
+      if (typeof html2canvas === 'undefined') return null;
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+      const scale = CAPTURE_SCALE();
+      const cardCanvas = await html2canvas(summaryCard, {
+        backgroundColor: '#09090b',
+        useCORS: true,
+        scale,
+        logging: false
+      });
+
+      let finalCanvas = cardCanvas;
+      if (ctaFooter) {
+        ctaFooter.classList.remove('hidden');
+        void ctaFooter.offsetHeight;
+        try {
+          const footerCanvas = await html2canvas(ctaFooter, {
+            backgroundColor: '#09090b',
+            useCORS: true,
+            scale,
+            logging: false
+          });
+          const composite = document.createElement('canvas');
+          composite.width = cardCanvas.width;
+          composite.height = cardCanvas.height + footerCanvas.height;
+          const ctx = composite.getContext('2d');
+          ctx.drawImage(cardCanvas, 0, 0);
+          ctx.drawImage(footerCanvas, 0, cardCanvas.height);
+          finalCanvas = composite;
+        } catch (footerErr) {
+          console.error('CTA footer capture failed, using card-only image:', footerErr);
+        } finally {
+          ctaFooter.classList.add('hidden');
+        }
+      }
+
+      return await new Promise(resolve => finalCanvas.toBlob(blob => resolve(blob), 'image/png'));
+    } catch (err) {
+      console.error('Card image capture failed:', err);
+      return null;
+    } finally {
+      restoreCardBlocks();
     }
   }
 
@@ -989,10 +1022,23 @@
     }
     const imageFile = imageBlob ? new File([imageBlob], `${fileSlug}-smartcard.png`, { type: 'image/png' }) : null;
 
-    // Preferred path: native share sheet with the image attached.
+    // Preferred path: native share sheet with the image attached. Some
+    // share targets (observed with WhatsApp Desktop via the Windows share
+    // sheet) only forward the file and silently drop any accompanying
+    // title/text — that's decided entirely by the OS/receiving app, not
+    // something this page can force. As insurance, copy the caption to the
+    // clipboard first so it's just a paste away if it doesn't show up
+    // automatically. Also omit `title` here: passing both title and text
+    // makes some share targets pick one and drop the other, and text alone
+    // already carries the full caption.
     if (imageFile && navigator.canShare && navigator.canShare({ files: [imageFile] })) {
+      const fullCaption = `${shareText} ${shareUrl}`;
+      if (navigator.clipboard) {
+        try { await navigator.clipboard.writeText(fullCaption); } catch (clipErr) { /* best-effort only */ }
+      }
       try {
-        await navigator.share({ title: 'SyllabusTLDR', text: `${shareText} ${shareUrl}`, files: [imageFile] });
+        await navigator.share({ text: fullCaption, files: [imageFile] });
+        showToast('Shared! Caption also copied — paste it if it didn\'t come through.');
         return;
       } catch (err) {
         if (err.name === 'AbortError') return;
