@@ -204,42 +204,44 @@
 
                 <!-- LANGUAGE SWITCHER -->
                 <div class="relative">
-                    <button id="lang-switcher-btn" aria-haspopup="true" aria-expanded="false" class="btn-press flex items-center gap-1 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs font-semibold pl-2 pr-1.5 py-1 rounded-full">
-                        <span aria-hidden="true">🇺🇸</span>
+                    <button id="lang-switcher-btn" aria-haspopup="true" aria-expanded="false" class="btn-press flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs font-semibold pl-2.5 pr-1.5 py-1 rounded-full">
+                        <!-- LANG_SWITCHER_BUTTON_START -->
                         <span class="sr-only sm:not-sr-only">EN</span>
+                        <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><rect y="1.08" width="20" height="1.08" fill="#fff"/><rect y="3.23" width="20" height="1.08" fill="#fff"/><rect y="5.38" width="20" height="1.08" fill="#fff"/><rect y="7.54" width="20" height="1.08" fill="#fff"/><rect y="9.69" width="20" height="1.08" fill="#fff"/><rect y="11.85" width="20" height="1.08" fill="#fff"/><rect width="8" height="7.54" fill="#3C3B6E"/></svg></span>
+<!-- LANG_SWITCHER_BUTTON_END -->
                         <i class="fa-solid fa-chevron-down text-[9px] text-zinc-500"></i>
                     </button>
                     <div id="lang-switcher-menu" class="hidden absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50 py-1 max-h-80 overflow-y-auto">
                         <!-- LANG_SWITCHER_MENU_START -->
-                        <a href="https://syllabustldr.com/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-white bg-zinc-800/70">
-                            <span aria-hidden="true">🇺🇸</span> English
+                        <a href="https://syllabustldr.com/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-white bg-zinc-800/70">
+                            <span>English</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><rect y="1.08" width="20" height="1.08" fill="#fff"/><rect y="3.23" width="20" height="1.08" fill="#fff"/><rect y="5.38" width="20" height="1.08" fill="#fff"/><rect y="7.54" width="20" height="1.08" fill="#fff"/><rect y="9.69" width="20" height="1.08" fill="#fff"/><rect y="11.85" width="20" height="1.08" fill="#fff"/><rect width="8" height="7.54" fill="#3C3B6E"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/es/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇪🇸</span> Español
+                        <a href="https://syllabustldr.com/es/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>Español</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/fr/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇫🇷</span> Français
+                        <a href="https://syllabustldr.com/fr/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>Français</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#0055A4"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/pt/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇧🇷</span> Português
+                        <a href="https://syllabustldr.com/pt/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>Português</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#009739"/><polygon points="10,1.5 18,7 10,12.5 2,7" fill="#FEDD00"/><circle cx="10" cy="7" r="3.2" fill="#012169"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/zh/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇨🇳</span> 中文
+                        <a href="https://syllabustldr.com/zh/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>中文</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DE2910"/><polygon points="4,2 4.7,3.9 6.7,3.9 5.1,5.1 5.7,7 4,5.8 2.3,7 2.9,5.1 1.3,3.9 3.3,3.9" fill="#FFDE00"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/de/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇩🇪</span> Deutsch
+                        <a href="https://syllabustldr.com/de/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>Deutsch</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#000"/><rect y="4.67" width="20" height="4.67" fill="#DD0000"/><rect y="9.33" width="20" height="4.67" fill="#FFCE00"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/hi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇮🇳</span> हिन्दी
+                        <a href="https://syllabustldr.com/hi/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>हिन्दी</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#FF9933"/><rect y="4.67" width="20" height="4.67" fill="#fff"/><rect y="9.33" width="20" height="4.67" fill="#138808"/><circle cx="10" cy="7" r="1.6" fill="none" stroke="#000080" stroke-width="0.3"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/ar/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇸🇦</span> العربية
+                        <a href="https://syllabustldr.com/ar/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>العربية</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#006C35"/><rect y="9.5" width="20" height="1" fill="#fff"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/ko/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇰🇷</span> 한국어
+                        <a href="https://syllabustldr.com/ko/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>한국어</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="3.2" fill="#CD2E3A"/><path d="M10,3.8 a3.2,3.2 0 0,0 0,6.4 a1.6,1.6 0 0,1 0,-3.2 a1.6,1.6 0 0,0 0,-3.2 z" fill="#0047A0"/></svg></span>
                         </a>
-                        <a href="https://syllabustldr.com/vi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-                            <span aria-hidden="true">🇻🇳</span> Tiếng Việt
+                        <a href="https://syllabustldr.com/vi/" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span>Tiếng Việt</span> <span aria-hidden="true" class="inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DA251D"/><polygon points="10,3 10.9,5.8 13.9,5.8 11.5,7.5 12.4,10.3 10,8.6 7.6,10.3 8.5,7.5 6.1,5.8 9.1,5.8" fill="#FFFF00"/></svg></span>
                         </a>
 <!-- LANG_SWITCHER_MENU_END -->
                     </div>

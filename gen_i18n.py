@@ -53,6 +53,28 @@ PROTECTED_START_RE = re.compile(r'^  const GRADE_KEYWORDS', re.M)
 PROTECTED_END_RE = re.compile(r'^  function renderDashboard', re.M)
 
 # ---------------------------------------------------------------------------
+# FLAG_SVGS — small inline flag icons (viewBox 0 0 20 14), used instead of
+# Unicode flag emoji. Windows Chrome/Edge has no color-flag glyphs and falls
+# back to showing the raw two-letter region code as text (e.g. "US", "ES")
+# instead of a flag — these render identically on every OS since they're
+# plain SVG shapes baked into the page, no font or network dependency.
+# ---------------------------------------------------------------------------
+FLAG_SVGS = {
+    'en': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#B22234"/><rect y="1.08" width="20" height="1.08" fill="#fff"/><rect y="3.23" width="20" height="1.08" fill="#fff"/><rect y="5.38" width="20" height="1.08" fill="#fff"/><rect y="7.54" width="20" height="1.08" fill="#fff"/><rect y="9.69" width="20" height="1.08" fill="#fff"/><rect y="11.85" width="20" height="1.08" fill="#fff"/><rect width="8" height="7.54" fill="#3C3B6E"/></svg>',
+    'es': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3.5" width="20" height="7" fill="#F1BF00"/></svg>',
+    'fr': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="6.67" height="14" fill="#0055A4"/><rect x="6.67" width="6.67" height="14" fill="#fff"/><rect x="13.33" width="6.67" height="14" fill="#EF4135"/></svg>',
+    'pt': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#009739"/><polygon points="10,1.5 18,7 10,12.5 2,7" fill="#FEDD00"/><circle cx="10" cy="7" r="3.2" fill="#012169"/></svg>',
+    'zh': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DE2910"/><polygon points="4,2 4.7,3.9 6.7,3.9 5.1,5.1 5.7,7 4,5.8 2.3,7 2.9,5.1 1.3,3.9 3.3,3.9" fill="#FFDE00"/></svg>',
+    'de': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#000"/><rect y="4.67" width="20" height="4.67" fill="#DD0000"/><rect y="9.33" width="20" height="4.67" fill="#FFCE00"/></svg>',
+    'hi': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="4.67" fill="#FF9933"/><rect y="4.67" width="20" height="4.67" fill="#fff"/><rect y="9.33" width="20" height="4.67" fill="#138808"/><circle cx="10" cy="7" r="1.6" fill="none" stroke="#000080" stroke-width="0.3"/></svg>',
+    'ar': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#006C35"/><rect y="9.5" width="20" height="1" fill="#fff"/></svg>',
+    'ko': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="3.2" fill="#CD2E3A"/><path d="M10,3.8 a3.2,3.2 0 0,0 0,6.4 a1.6,1.6 0 0,1 0,-3.2 a1.6,1.6 0 0,0 0,-3.2 z" fill="#0047A0"/></svg>',
+    'vi': '<svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#DA251D"/><polygon points="10,3 10.9,5.8 13.9,5.8 11.5,7.5 12.4,10.3 10,8.6 7.6,10.3 8.5,7.5 6.1,5.8 9.1,5.8" fill="#FFFF00"/></svg>',
+}
+for _lang in ['en', 'es', 'fr', 'pt', 'zh', 'de', 'hi', 'ar', 'ko', 'vi']:
+    assert _lang in FLAG_SVGS, f'missing FLAG_SVGS for {_lang}'
+
+# ---------------------------------------------------------------------------
 # EXISTING_STATIC_EN / EXISTING_STATIC_TR — the 45 UI strings that already
 # had es/fr/pt/zh translations before this script was rebuilt. Extracted
 # losslessly from the previously-generated es/fr/pt/zh/index.html files by
@@ -70,7 +92,6 @@ EXISTING_STATIC_EN = [
     '            <a href="/" class="flex items-center gap-2.5">',
     '                    <p class="text-xs text-zinc-500">Zero logins • 2-second summary</p>',
     '                    100% Free',
-    '                        <span aria-hidden="true">🇺🇸</span>\n                        <span class="sr-only sm:not-sr-only">EN</span>',
     '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Drop the <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Text Wall.</span></h2>',
     '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Convert complex multi-page syllabi into a clean, pocket-sized dashboard instantly.</p>',
     '                        <p id="drop-title" class="font-bold text-sm">Upload Syllabus PDF</p>',
@@ -115,7 +136,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/es/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">Sin inicio de sesión • Resumen en 2 segundos</p>',
         '                    100% Gratis',
-        '                        <span aria-hidden="true">🇪🇸</span>\n                        <span class="sr-only sm:not-sr-only">ES</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Olvídate del <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Muro de Texto.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Convierte sílabos complejos de varias páginas en un panel limpio y de bolsillo al instante.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">Sube el PDF del Sílabo</p>',
@@ -158,7 +178,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/fr/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">Sans connexion • Résumé en 2 secondes</p>',
         '                    100% Gratuit',
-        '                        <span aria-hidden="true">🇫🇷</span>\n                        <span class="sr-only sm:not-sr-only">FR</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Oubliez le <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Mur de Texte.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Transformez un syllabus complexe de plusieurs pages en un tableau de bord clair et compact, instantanément.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">Importer le PDF du Syllabus</p>',
@@ -201,7 +220,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/pt/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">Sem login • Resumo em 2 segundos</p>',
         '                    100% Grátis',
-        '                        <span aria-hidden="true">🇧🇷</span>\n                        <span class="sr-only sm:not-sr-only">PT</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Chega de <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Muro de Texto.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Transforme ementas complexas de várias páginas em um painel limpo e compacto, instantaneamente.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">Enviar PDF da Ementa</p>',
@@ -244,7 +262,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/zh/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">无需登录 • 2秒生成摘要</p>',
         '                    100% 免费',
-        '                        <span aria-hidden="true">🇨🇳</span>\n                        <span class="sr-only sm:not-sr-only">中文</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">告别<span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">文字墙。</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">瞬间将冗长复杂的多页教学大纲转换成简洁的口袋仪表盘。</p>',
         '                        <p id="drop-title" class="font-bold text-sm">上传教学大纲 PDF</p>',
@@ -287,7 +304,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/de/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">Keine Anmeldung • Zusammenfassung in 2 Sekunden</p>',
         '                    100% Kostenlos',
-        '                        <span aria-hidden="true">🇩🇪</span>\n                        <span class="sr-only sm:not-sr-only">DE</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Schluss mit der <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Textwand.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Verwandle komplexe, mehrseitige Studienpläne sofort in ein übersichtliches, kompaktes Dashboard.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">Studienplan-PDF hochladen</p>',
@@ -330,7 +346,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/vi/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">Không cần đăng nhập • Tóm tắt trong 2 giây</p>',
         '                    100% Miễn Phí',
-        '                        <span aria-hidden="true">🇻🇳</span>\n                        <span class="sr-only sm:not-sr-only">VI</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">Bỏ Qua <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">Bức Tường Chữ.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">Chuyển đổi đề cương môn học phức tạp, nhiều trang thành bảng tổng quan gọn gàng, súc tích ngay lập tức.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">Tải Lên PDF Đề Cương</p>',
@@ -373,7 +388,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/ko/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">로그인 불필요 • 2초 요약</p>',
         '                    100% 무료',
-        '                        <span aria-hidden="true">🇰🇷</span>\n                        <span class="sr-only sm:not-sr-only">한국어</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">이제 그만, <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">텍스트 벽.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">복잡한 여러 페이지의 강의계획서를 깔끔하고 간편한 대시보드로 즉시 변환하세요.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">강의계획서 PDF 업로드</p>',
@@ -416,7 +430,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/hi/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">कोई लॉगिन नहीं • 2-सेकंड सारांश</p>',
         '                    100% मुफ़्त',
-        '                        <span aria-hidden="true">🇮🇳</span>\n                        <span class="sr-only sm:not-sr-only">हिन्दी</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">टेक्स्ट की <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">दीवार को भूल जाइए।</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">जटिल, कई पन्नों वाले पाठ्यक्रम को तुरंत एक साफ़, कॉम्पैक्ट डैशबोर्ड में बदलें।</p>',
         '                        <p id="drop-title" class="font-bold text-sm">पाठ्यक्रम PDF अपलोड करें</p>',
@@ -459,7 +472,6 @@ EXISTING_STATIC_TR = {
         '            <a href="/ar/" class="flex items-center gap-2.5">',
         '                    <p class="text-xs text-zinc-500">بدون تسجيل دخول • ملخص خلال ثانيتين</p>',
         '                    100% مجاني',
-        '                        <span aria-hidden="true">🇸🇦</span>\n                        <span class="sr-only sm:not-sr-only">العربية</span>',
         '                <h2 class="font-display text-3xl font-bold tracking-tight leading-tight">انسَ <span class="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">جدار النص.</span></h2>',
         '                <p class="text-zinc-400 text-sm max-w-xs mx-auto text-pretty">حوّل مخططات المقررات المعقدة متعددة الصفحات إلى لوحة معلومات نظيفة ومختصرة، فورًا.</p>',
         '                        <p id="drop-title" class="font-bold text-sm">رفع ملف PDF لمخطط المقرر</p>',
@@ -1022,6 +1034,11 @@ def build_hreflang_block(lang):
     return '\n'.join(lines)
 
 
+def flag_span(code, extra_class=''):
+    cls = f'inline-block w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0{extra_class}'
+    return f'<span aria-hidden="true" class="{cls}">{FLAG_SVGS[code]}</span>'
+
+
 def build_switcher_block(current_lang):
     lines = []
     for code in LANG_ORDER:
@@ -1029,10 +1046,18 @@ def build_switcher_block(current_lang):
         url = 'https://syllabustldr.com' + meta['home']
         active = code == current_lang
         cls = 'text-white bg-zinc-800/70' if active else 'text-zinc-300 hover:bg-zinc-800 hover:text-white transition'
-        lines.append(f'                        <a href="{url}" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold {cls}">')
-        lines.append(f'                            <span aria-hidden="true">{meta["flag"]}</span> {meta["name"]}')
+        lines.append(f'                        <a href="{url}" class="flex items-center justify-between gap-2.5 px-3.5 py-2.5 text-xs font-semibold {cls}">')
+        lines.append(f'                            <span>{meta["name"]}</span> {flag_span(code)}')
         lines.append('                        </a>')
     return '\n'.join(lines)
+
+
+def build_switcher_button(current_lang):
+    code_label = LANG_META[current_lang]['hreflang'].split('-')[0].upper()
+    return (
+        f'                        <span class="sr-only sm:not-sr-only">{code_label}</span>\n'
+        f'                        {flag_span(current_lang)}'
+    )
 
 
 MAIN_SCRIPT_ANCHOR_RE = re.compile(
@@ -1068,6 +1093,9 @@ def generate(lang, master_text):
     )
     combined = replace_between_markers(
         combined, '<!-- LANG_SWITCHER_MENU_START -->', '<!-- LANG_SWITCHER_MENU_END -->', build_switcher_block(lang)
+    )
+    combined = replace_between_markers(
+        combined, '<!-- LANG_SWITCHER_BUTTON_START -->', '<!-- LANG_SWITCHER_BUTTON_END -->', build_switcher_button(lang)
     )
 
     if lang != 'en':
