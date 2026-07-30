@@ -283,6 +283,19 @@
                 </div>
             </div>
 
+            <!-- Real, functional duplicates of the top action buttons, so
+                 they're within reach after scrolling through the card too. -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <button id="calendar-btn-bottom" class="btn-press bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-lime-400"></i>
+                    Sync to Calendar (.ics)
+                </button>
+                <button id="share-btn-bottom" class="btn-press bg-gradient-to-r from-orange-500 to-pink-600 hover:brightness-110 text-white px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-pink-600/20">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    Share Smart-Card
+                </button>
+            </div>
+
             <button id="reset-btn" class="btn-press w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
                 <i class="fa-solid fa-rotate-left text-xs"></i>
                 Clear and summarize another syllabus
@@ -327,6 +340,8 @@
   const inputError = document.getElementById('input-error');
   const calendarBtn = document.getElementById('calendar-btn');
   const shareBtn = document.getElementById('share-btn');
+  const calendarBtnBottom = document.getElementById('calendar-btn-bottom');
+  const shareBtnBottom = document.getElementById('share-btn-bottom');
   const resetBtn = document.getElementById('reset-btn');
   const toast = document.getElementById('toast');
   const summaryCard = document.getElementById('summary-card');
@@ -1002,9 +1017,15 @@
     const shareUrl = 'https://syllabustldr.com';
     const fileSlug = (data.course.code || data.course.title || 'syllabus').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 
+    // There are two Share Smart-Card buttons on the page (one above the
+    // card, one below it) — keep both in sync so neither looks stale while
+    // the other is mid-share.
+    const shareBtns = [shareBtn, shareBtnBottom].filter(Boolean);
     const originalBtnHTML = shareBtn.innerHTML;
-    shareBtn.disabled = true;
-    shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+    shareBtns.forEach(btn => {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+    });
     let imageBlob = null;
     try {
       // Guard against captureCardImage() ever hanging indefinitely (e.g. a
@@ -1017,8 +1038,10 @@
         new Promise(resolve => setTimeout(() => resolve(null), 6000))
       ]);
     } finally {
-      shareBtn.disabled = false;
-      shareBtn.innerHTML = originalBtnHTML;
+      shareBtns.forEach(btn => {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHTML;
+      });
     }
     const imageFile = imageBlob ? new File([imageBlob], `${fileSlug}-smartcard.png`, { type: 'image/png' }) : null;
 
@@ -1127,15 +1150,19 @@
     }
   }
 
-  calendarBtn.addEventListener('click', () => {
+  const onCalendarClick = () => {
     if (!lastParsed) return;
     downloadICS(lastParsed);
-  });
+  };
+  calendarBtn.addEventListener('click', onCalendarClick);
+  if (calendarBtnBottom) calendarBtnBottom.addEventListener('click', onCalendarClick);
 
-  shareBtn.addEventListener('click', () => {
+  const onShareClick = () => {
     if (!lastParsed) return;
     shareSmartCard(lastParsed);
-  });
+  };
+  shareBtn.addEventListener('click', onShareClick);
+  if (shareBtnBottom) shareBtnBottom.addEventListener('click', onShareClick);
 
   resetBtn.addEventListener('click', () => {
     pasteBox.value = '';
