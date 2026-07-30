@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<!-- Consent Mode v2 — default to denied for ad/analytics storage until the
+     visitor makes a choice in the cookie banner below. Must run before
+     gtag.js loads so the very first hit already respects it. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<script>
   gtag('js', new Date());
   gtag('config', 'G-CQT3CXF341');
 </script>
@@ -53,19 +66,50 @@
 <!-- This page is the English (default) version. hreflang tells Google which
      URL to serve for which language/locale so each version can rank in its
      own language's search results instead of competing with each other. -->
+<!-- HREFLANG_BLOCK_START -->
 <link rel="canonical" href="https://syllabustldr.com/es/">
 <link rel="alternate" hreflang="en" href="https://syllabustldr.com/">
 <link rel="alternate" hreflang="es" href="https://syllabustldr.com/es/">
 <link rel="alternate" hreflang="fr" href="https://syllabustldr.com/fr/">
 <link rel="alternate" hreflang="pt" href="https://syllabustldr.com/pt/">
 <link rel="alternate" hreflang="zh-Hans" href="https://syllabustldr.com/zh/">
+<link rel="alternate" hreflang="de" href="https://syllabustldr.com/de/">
+<link rel="alternate" hreflang="hi" href="https://syllabustldr.com/hi/">
+<link rel="alternate" hreflang="ar" href="https://syllabustldr.com/ar/">
+<link rel="alternate" hreflang="ko" href="https://syllabustldr.com/ko/">
+<link rel="alternate" hreflang="vi" href="https://syllabustldr.com/vi/">
 <link rel="alternate" hreflang="x-default" href="https://syllabustldr.com/">
+<!-- HREFLANG_BLOCK_END -->
 <meta property="og:title" content="SyllabusTLDR — Simplifica tu Sílabo Universitario al Instante">
 <meta property="og:description" content="Sube tu sílabo y obtén un panel visual al instante: ponderaciones de calificación, fechas límite y sincronización con calendario en 2 segundos. 100% gratis, sin inicio de sesión.">
 <meta property="og:url" content="https://syllabustldr.com/es/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary">
+
+<!-- GEO/SEO structured data: helps AI answer engines and search crawlers
+     cite this page accurately (name, what it does, that it's free). -->
+<!-- JSONLD_BLOCK_START -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SyllabusTLDR",
+  "url": "https://syllabustldr.com/",
+  "description": "Drop your syllabus, get a pocket-sized dashboard. Grade weights, deadlines, and calendar sync in 2 seconds. 100% free, no login.",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Any (runs in browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "EIGHTFINITY LTD",
+    "url": "https://syllabustldr.com/",
+    "areaServed": "Worldwide",
+    "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+  }
+}
+</script>
+<!-- JSONLD_BLOCK_END -->
 
 <!--
   PDF.js and html2canvas are NOT loaded here. Both are only needed after a
@@ -124,6 +168,10 @@
 
   .btn-press { transition: transform .15s cubic-bezier(.22,1,.36,1), box-shadow .15s ease, filter .15s ease; }
   .btn-press:active { transform: scale(.96); }
+
+  /* Arabic RTL: this menu is absolutely positioned with a physical `right-0`
+     offset, which doesn't auto-flip under dir="rtl" the way flexbox does. */
+  [dir="rtl"] #lang-switcher-menu { right: auto; left: 0; }
 </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between relative overflow-x-hidden">
@@ -161,7 +209,8 @@
                         <span class="sr-only sm:not-sr-only">ES</span>
                         <i class="fa-solid fa-chevron-down text-[9px] text-zinc-500"></i>
                     </button>
-                    <div id="lang-switcher-menu" class="hidden absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50 py-1">
+                    <div id="lang-switcher-menu" class="hidden absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50 py-1 max-h-80 overflow-y-auto">
+                        <!-- LANG_SWITCHER_MENU_START -->
                         <a href="https://syllabustldr.com/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
                             <span aria-hidden="true">🇺🇸</span> English
                         </a>
@@ -177,6 +226,22 @@
                         <a href="https://syllabustldr.com/zh/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
                             <span aria-hidden="true">🇨🇳</span> 中文
                         </a>
+                        <a href="https://syllabustldr.com/de/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇩🇪</span> Deutsch
+                        </a>
+                        <a href="https://syllabustldr.com/hi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇮🇳</span> हिन्दी
+                        </a>
+                        <a href="https://syllabustldr.com/ar/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇸🇦</span> العربية
+                        </a>
+                        <a href="https://syllabustldr.com/ko/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇰🇷</span> 한국어
+                        </a>
+                        <a href="https://syllabustldr.com/vi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇻🇳</span> Tiếng Việt
+                        </a>
+<!-- LANG_SWITCHER_MENU_END -->
                     </div>
                 </div>
             </div>
@@ -386,13 +451,70 @@
 
     <!-- FOOTER -->
     <footer class="px-4 py-4 text-center relative z-10">
-        <div class="flex items-center justify-center gap-3 mb-2 text-[11px]">
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mb-2 text-[11px]">
+            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">Acerca de</a>
+            <span class="text-zinc-800">•</span>
+            <a href="/contact/" class="text-zinc-600 hover:text-zinc-400 transition">Contacto</a>
+            <span class="text-zinc-800">•</span>
+            <a href="/blog/" class="text-zinc-600 hover:text-zinc-400 transition">Blog</a>
+            <span class="text-zinc-800">•</span>
             <a href="/terms-of-service.html" class="text-zinc-600 hover:text-zinc-400 transition">Términos de Servicio</a>
             <span class="text-zinc-800">•</span>
             <a href="/privacy-policy.html" class="text-zinc-600 hover:text-zinc-400 transition">Política de Privacidad</a>
         </div>
         <p class="text-[11px] text-zinc-600">© 2026 SyllabusTLDR • Hecho para máxima velocidad móvil.</p>
+        <p class="text-[11px] text-zinc-700 mt-1">SyllabusTLDR está operado por EIGHTFINITY LTD, una empresa registrada en el Reino Unido.</p>
     </footer>
+
+    <!-- COOKIE CONSENT BANNER -->
+    <div id="consent-banner" class="hidden fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4">
+        <div class="max-w-xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <p class="text-xs text-zinc-400 leading-relaxed flex-1">
+                Usamos cookies para análisis y, una vez habilitados los anuncios, para mostrar anuncios relevantes. Lee nuestra
+                <a href="/privacy-policy.html" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">Privacy Policy</a>.
+            </p>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Rechazar</button>
+                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Aceptar Todo</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+      'use strict';
+      var KEY = 'stldr_consent';
+      var banner = document.getElementById('consent-banner');
+      var stored = null;
+      try { stored = localStorage.getItem(KEY); } catch (e) {}
+
+      function updateConsent(granted) {
+        if (typeof gtag !== 'function') return;
+        gtag('consent', 'update', {
+          ad_storage: granted ? 'granted' : 'denied',
+          ad_user_data: granted ? 'granted' : 'denied',
+          ad_personalization: granted ? 'granted' : 'denied',
+          analytics_storage: granted ? 'granted' : 'denied'
+        });
+      }
+
+      if (stored === 'granted' || stored === 'denied') {
+        updateConsent(stored === 'granted');
+      } else if (banner) {
+        banner.classList.remove('hidden');
+      }
+
+      function choose(granted) {
+        try { localStorage.setItem(KEY, granted ? 'granted' : 'denied'); } catch (e) {}
+        updateConsent(granted);
+        if (banner) banner.classList.add('hidden');
+      }
+
+      var acceptBtn = document.getElementById('consent-accept');
+      var rejectBtn = document.getElementById('consent-reject');
+      if (acceptBtn) acceptBtn.addEventListener('click', function () { choose(true); });
+      if (rejectBtn) rejectBtn.addEventListener('click', function () { choose(false); });
+    })();
+    </script>
 
 <script>
 window.T = {
@@ -434,6 +556,7 @@ window.T = {
   calendarModalSubtitleSingle: (label, display) => `Agrega "${label}" (${display}) a tu calendario.`,
 };
 </script>
+
 <script>
 (function () {
   'use strict';

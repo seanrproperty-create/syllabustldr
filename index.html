@@ -66,19 +66,50 @@
 <!-- This page is the English (default) version. hreflang tells Google which
      URL to serve for which language/locale so each version can rank in its
      own language's search results instead of competing with each other. -->
+<!-- HREFLANG_BLOCK_START -->
 <link rel="canonical" href="https://syllabustldr.com/">
 <link rel="alternate" hreflang="en" href="https://syllabustldr.com/">
 <link rel="alternate" hreflang="es" href="https://syllabustldr.com/es/">
 <link rel="alternate" hreflang="fr" href="https://syllabustldr.com/fr/">
 <link rel="alternate" hreflang="pt" href="https://syllabustldr.com/pt/">
 <link rel="alternate" hreflang="zh-Hans" href="https://syllabustldr.com/zh/">
+<link rel="alternate" hreflang="de" href="https://syllabustldr.com/de/">
+<link rel="alternate" hreflang="hi" href="https://syllabustldr.com/hi/">
+<link rel="alternate" hreflang="ar" href="https://syllabustldr.com/ar/">
+<link rel="alternate" hreflang="ko" href="https://syllabustldr.com/ko/">
+<link rel="alternate" hreflang="vi" href="https://syllabustldr.com/vi/">
 <link rel="alternate" hreflang="x-default" href="https://syllabustldr.com/">
+<!-- HREFLANG_BLOCK_END -->
 <meta property="og:title" content="SyllabusTLDR — Instantly Simplify Your Course Outline">
 <meta property="og:description" content="Drop your syllabus, get a pocket-sized dashboard. Grade weights, deadlines, and calendar sync in 2 seconds. 100% free, no login.">
 <meta property="og:url" content="https://syllabustldr.com/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary">
+
+<!-- GEO/SEO structured data: helps AI answer engines and search crawlers
+     cite this page accurately (name, what it does, that it's free). -->
+<!-- JSONLD_BLOCK_START -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SyllabusTLDR",
+  "url": "https://syllabustldr.com/",
+  "description": "Drop your syllabus, get a pocket-sized dashboard. Grade weights, deadlines, and calendar sync in 2 seconds. 100% free, no login.",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Any (runs in browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "EIGHTFINITY LTD",
+    "url": "https://syllabustldr.com/",
+    "areaServed": "Worldwide",
+    "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+  }
+}
+</script>
+<!-- JSONLD_BLOCK_END -->
 
 <!--
   PDF.js and html2canvas are NOT loaded here. Both are only needed after a
@@ -137,6 +168,10 @@
 
   .btn-press { transition: transform .15s cubic-bezier(.22,1,.36,1), box-shadow .15s ease, filter .15s ease; }
   .btn-press:active { transform: scale(.96); }
+
+  /* Arabic RTL: this menu is absolutely positioned with a physical `right-0`
+     offset, which doesn't auto-flip under dir="rtl" the way flexbox does. */
+  [dir="rtl"] #lang-switcher-menu { right: auto; left: 0; }
 </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between relative overflow-x-hidden">
@@ -174,7 +209,8 @@
                         <span class="sr-only sm:not-sr-only">EN</span>
                         <i class="fa-solid fa-chevron-down text-[9px] text-zinc-500"></i>
                     </button>
-                    <div id="lang-switcher-menu" class="hidden absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50 py-1">
+                    <div id="lang-switcher-menu" class="hidden absolute right-0 mt-2 w-44 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50 py-1 max-h-80 overflow-y-auto">
+                        <!-- LANG_SWITCHER_MENU_START -->
                         <a href="https://syllabustldr.com/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-white bg-zinc-800/70">
                             <span aria-hidden="true">🇺🇸</span> English
                         </a>
@@ -190,6 +226,22 @@
                         <a href="https://syllabustldr.com/zh/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
                             <span aria-hidden="true">🇨🇳</span> 中文
                         </a>
+                        <a href="https://syllabustldr.com/de/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇩🇪</span> Deutsch
+                        </a>
+                        <a href="https://syllabustldr.com/hi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇮🇳</span> हिन्दी
+                        </a>
+                        <a href="https://syllabustldr.com/ar/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇸🇦</span> العربية
+                        </a>
+                        <a href="https://syllabustldr.com/ko/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇰🇷</span> 한국어
+                        </a>
+                        <a href="https://syllabustldr.com/vi/" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
+                            <span aria-hidden="true">🇻🇳</span> Tiếng Việt
+                        </a>
+<!-- LANG_SWITCHER_MENU_END -->
                     </div>
                 </div>
             </div>
