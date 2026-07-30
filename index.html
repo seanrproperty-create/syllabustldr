@@ -353,6 +353,57 @@
   'use strict';
 
   // ---------------------------------------------------------------------
+  // TRANSLATIONS — every UI-facing dynamic string the JS below writes into
+  // the page. This is the English (default) set; translated language pages
+  // (e.g. /es/) override this whole object with translated values before
+  // this script block runs. NONE of this affects parsing: the regex engine
+  // that scans the pasted/uploaded syllabus text always matches English
+  // keywords ("Exam", "Due", "%"...), because that's the language real
+  // syllabi are actually written in for these users. Only what the app
+  // *displays* is translated.
+  window.T = window.T || {
+    untitledCourse: 'Untitled Course',
+    courseDetailsUnavailable: 'Course details unavailable',
+    referToProfessor: 'Refer to Professor',
+    gradesEmptyState: 'Refer to Professor for exact grade weighting.',
+    deadlinesEmptyState: 'Refer to Professor for key dates.',
+    flagLabels: {
+      Due: 'Due', Submission: 'Submission', Test: 'Test', Exam: 'Exam',
+      Midterm: 'Midterm', Final: 'Final', Quiz: 'Quiz', 'Project Due': 'Project Due',
+      Presentation: 'Presentation', 'Paper Due': 'Paper Due'
+    },
+    weekLabel: 'Week',
+    preparingLabel: 'Preparing…',
+    toastNoExactDates: 'Deadlines only reference week numbers — no exact dates to sync yet.',
+    toastNoDatesFound: 'No specific dates found — nothing to sync yet.',
+    toastICSDownloaded: 'Calendar file downloaded — tap it to import.',
+    shareGradesSummarized: 'Grades summarized',
+    shareDeadlinesOrganized: 'Deadlines organized',
+    shareCaptionTemplate: (title, topGrade, nextDue) => `📚 ${title} — simplified in 2 seconds.\n${topGrade}. ${nextDue}.\n\nSkip the text wall:`,
+    shareTopGradeTemplate: (label, weight) => `${label} is ${weight}% of your grade`,
+    shareNextDueTemplate: (label, display) => `Next up: ${label} on ${display}`,
+    toastSharedCopied: 'Shared! Caption also copied — paste it if it didn\'t come through.',
+    toastShareCancelled: 'Share cancelled.',
+    toastImageDownloadedCopied: 'Image downloaded + caption copied — attach & paste to share!',
+    toastShareUnsupportedCopied: 'Sharing not supported here — copied caption instead!',
+    toastImageDownloadedClipboardFailed: 'Image downloaded — copying the caption failed.',
+    toastShareUnsupportedDevice: 'Unable to share on this device.',
+    toastImageDownloaded: 'Image downloaded to your device.',
+    toastShareUnsupportedAtAll: 'Sharing not supported on this device.',
+    errTooShort: 'Please provide more syllabus text — that looked too short to parse.',
+    errParseFailed: 'Something went wrong parsing that document. Try pasting the text instead.',
+    errNotPDF: 'Please drop a .pdf file.',
+    errPDFNoText: 'Could not read text from that PDF — try pasting the syllabus text instead.',
+    errPDFReadFailed: 'Failed to read that PDF. Try pasting the syllabus text instead.',
+    dropTitleDefault: 'Upload Syllabus PDF',
+    dropSubtitleDefault: 'Tap to select or drop file here',
+    dropTitleReading: 'Reading PDF…',
+    calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook & Yahoo quick-add your next deadline — "${label}" (${display}). Apple/.ics grabs all ${count} deadlines at once.`,
+    calendarModalSubtitleSingle: (label, display) => `Adds "${label}" (${display}) to your calendar.`
+  };
+  var T = window.T;
+
+  // ---------------------------------------------------------------------
   // STATE
   // ---------------------------------------------------------------------
   let lastParsed = null; // { course, grades, deadlines, policy }
@@ -468,9 +519,9 @@
       }
     }
 
-    title = (title || 'Untitled Course').replace(/\s{2,}/g, ' ').replace(/[.,;:\-–\s]+$/, '').trim();
+    title = (title || T.untitledCourse).replace(/\s{2,}/g, ' ').replace(/[.,;:\-–\s]+$/, '').trim();
 
-    return { code, title: title || 'Untitled Course', term, termYear };
+    return { code, title: title || T.untitledCourse, term, termYear };
   }
 
   const GRADE_KEYWORDS = [
@@ -573,7 +624,11 @@
 
   function flagToLabel(rawFlag) {
     const key = titleCaseWord(rawFlag);
-    return FLAG_NORMALIZE[key] || key;
+    const normalized = FLAG_NORMALIZE[key] || key;
+    // FLAG_NORMALIZE maps to the canonical English key; T.flagLabels
+    // translates that canonical key for display only — matching against
+    // the syllabus text itself always happens in English above.
+    return T.flagLabels[normalized] || normalized;
   }
 
   function parseDateMatch(m, isNumeric, defaultYear) {
@@ -603,7 +658,7 @@
   function parseWeekMatch(m) {
     const weekNum = parseInt(m[1], 10);
     if (!weekNum) return null;
-    return { dateObj: null, display: `Week ${weekNum}`, sortKey: 1e15 + weekNum, icsEligible: false };
+    return { dateObj: null, display: `${T.weekLabel} ${weekNum}`, sortKey: 1e15 + weekNum, icsEligible: false };
   }
 
   function extractDeadlines(text, defaultYear) {
@@ -701,9 +756,9 @@
       text.match(/([^.\n]{0,80}\blate\s+(?:work|submission|assignment)s?[^.\n]{0,80})/i);
 
     return {
-      email: emailMatch ? emailMatch[0] : 'Refer to Professor',
-      officeHours: officeMatch ? officeMatch[1].trim().replace(/\s{2,}/g, ' ') : 'Refer to Professor',
-      latePolicy: lateMatch ? lateMatch[1].trim().replace(/\s{2,}/g, ' ') : 'Refer to Professor'
+      email: emailMatch ? emailMatch[0] : T.referToProfessor,
+      officeHours: officeMatch ? officeMatch[1].trim().replace(/\s{2,}/g, ' ') : T.referToProfessor,
+      latePolicy: lateMatch ? lateMatch[1].trim().replace(/\s{2,}/g, ' ') : T.referToProfessor
     };
   }
 
@@ -727,7 +782,7 @@
 
     document.getElementById('render-course-title').textContent = course.title;
     const metaParts = [course.code, course.term].filter(Boolean);
-    document.getElementById('render-course-meta').textContent = metaParts.length ? metaParts.join(' • ') : 'Course details unavailable';
+    document.getElementById('render-course-meta').textContent = metaParts.length ? metaParts.join(' • ') : T.courseDetailsUnavailable;
 
     // Grades
     const gradesEl = document.getElementById('render-grades');
@@ -744,7 +799,7 @@
         </div>
       `).join('');
     } else {
-      gradesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Refer to Professor for exact grade weighting.</p>`;
+      gradesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> ${escapeHtml(T.gradesEmptyState)}</p>`;
     }
 
     // Deadlines
@@ -759,7 +814,7 @@
         </div>
       `).join('');
     } else {
-      deadlinesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Refer to Professor for key dates.</p>`;
+      deadlinesEl.innerHTML = `<p class="text-xs text-zinc-500 italic flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> ${escapeHtml(T.deadlinesEmptyState)}</p>`;
     }
 
     // Policy
@@ -825,7 +880,7 @@
   // ---------------------------------------------------------------------
   function runPipeline(text) {
     if (!text || text.trim().length < 20) {
-      showInputError('Please provide more syllabus text — that looked too short to parse.');
+      showInputError(T.errTooShort);
       return;
     }
     hideInputError();
@@ -838,7 +893,7 @@
       } catch (err) {
         console.error(err);
         switchScreen('input');
-        showInputError('Something went wrong parsing that document. Try pasting the text instead.');
+        showInputError(T.errParseFailed);
       }
     }, 700);
   }
@@ -902,9 +957,7 @@
   function downloadICS(data) {
     const eligible = data.deadlines.filter(d => d.icsEligible && d.dateObj);
     if (!eligible.length) {
-      const msg = data.deadlines.length
-        ? "Deadlines only reference week numbers — no exact dates to sync yet."
-        : "No specific dates found — nothing to sync yet.";
+      const msg = data.deadlines.length ? T.toastNoExactDates : T.toastNoDatesFound;
       showToast(msg);
       return;
     }
@@ -919,7 +972,7 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Calendar file downloaded — tap it to import.');
+    showToast(T.toastICSDownloaded);
   }
 
   // ---------------------------------------------------------------------
@@ -1043,9 +1096,9 @@
   }
 
   async function shareSmartCard(data) {
-    const topGrade = data.grades[0] ? `${data.grades[0].label} is ${data.grades[0].weight}% of your grade` : 'Grades summarized';
-    const nextDue = data.deadlines[0] ? `Next up: ${data.deadlines[0].label} on ${data.deadlines[0].display}` : 'Deadlines organized';
-    const shareText = `📚 ${data.course.title} — simplified in 2 seconds.\n${topGrade}. ${nextDue}.\n\nSkip the text wall:`;
+    const topGrade = data.grades[0] ? T.shareTopGradeTemplate(data.grades[0].label, data.grades[0].weight) : T.shareGradesSummarized;
+    const nextDue = data.deadlines[0] ? T.shareNextDueTemplate(data.deadlines[0].label, data.deadlines[0].display) : T.shareDeadlinesOrganized;
+    const shareText = T.shareCaptionTemplate(data.course.title, topGrade, nextDue);
     const shareUrl = 'https://syllabustldr.com';
     const fileSlug = (data.course.code || data.course.title || 'syllabus').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 
@@ -1056,7 +1109,7 @@
     const originalBtnHTML = shareBtn.innerHTML;
     shareBtns.forEach(btn => {
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${escapeHtml(T.preparingLabel)}`;
     });
     let imageBlob = null;
     try {
@@ -1093,7 +1146,7 @@
       }
       try {
         await navigator.share({ text: fullCaption, files: [imageFile] });
-        showToast('Shared! Caption also copied — paste it if it didn\'t come through.');
+        showToast(T.toastSharedCopied);
         return;
       } catch (err) {
         if (err.name === 'AbortError') return;
@@ -1108,7 +1161,7 @@
         await navigator.share({ title: 'SyllabusTLDR', text: shareText, url: shareUrl });
         return;
       } catch (err) {
-        if (err.name !== 'AbortError') showToast('Share cancelled.');
+        if (err.name !== 'AbortError') showToast(T.toastShareCancelled);
         return;
       }
     }
@@ -1119,12 +1172,12 @@
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-        showToast(imageFile ? 'Image downloaded + caption copied — attach & paste to share!' : 'Sharing not supported here — copied caption instead!');
+        showToast(imageFile ? T.toastImageDownloadedCopied : T.toastShareUnsupportedCopied);
       } catch {
-        showToast(imageFile ? 'Image downloaded — copying the caption failed.' : 'Unable to share on this device.');
+        showToast(imageFile ? T.toastImageDownloadedClipboardFailed : T.toastShareUnsupportedDevice);
       }
     } else {
-      showToast(imageFile ? 'Image downloaded to your device.' : 'Sharing not supported on this device.');
+      showToast(imageFile ? T.toastImageDownloaded : T.toastShareUnsupportedAtAll);
     }
   }
 
@@ -1154,7 +1207,7 @@
     const file = e.dataTransfer.files && e.dataTransfer.files[0];
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      showInputError('Please drop a .pdf file.');
+      showInputError(T.errNotPDF);
       return;
     }
     pdfFileInput.files = e.dataTransfer.files;
@@ -1163,22 +1216,22 @@
 
   async function handlePDFFile(file) {
     hideInputError();
-    dropTitle.textContent = 'Reading PDF…';
+    dropTitle.textContent = T.dropTitleReading;
     dropSubtitle.textContent = file.name;
     try {
       const text = await extractTextFromPDF(file);
-      dropTitle.textContent = 'Upload Syllabus PDF';
-      dropSubtitle.textContent = 'Tap to select or drop file here';
+      dropTitle.textContent = T.dropTitleDefault;
+      dropSubtitle.textContent = T.dropSubtitleDefault;
       if (!text || text.trim().length < 20) {
-        showInputError('Could not read text from that PDF — try pasting the syllabus text instead.');
+        showInputError(T.errPDFNoText);
         return;
       }
       runPipeline(text);
     } catch (err) {
       console.error(err);
-      dropTitle.textContent = 'Upload Syllabus PDF';
-      dropSubtitle.textContent = 'Tap to select or drop file here';
-      showInputError('Failed to read that PDF. Try pasting the syllabus text instead.');
+      dropTitle.textContent = T.dropTitleDefault;
+      dropSubtitle.textContent = T.dropSubtitleDefault;
+      showInputError(T.errPDFReadFailed);
     }
   }
 
@@ -1223,17 +1276,15 @@
   function openCalendarModal(data) {
     const eligible = nextEligibleDeadlines(data);
     if (!eligible.length) {
-      const msg = data.deadlines.length
-        ? "Deadlines only reference week numbers — no exact dates to sync yet."
-        : "No specific dates found — nothing to sync yet.";
+      const msg = data.deadlines.length ? T.toastNoExactDates : T.toastNoDatesFound;
       showToast(msg);
       return;
     }
     calendarModalData = data;
     const next = eligible[0];
     calendarModalSubtitle.textContent = eligible.length > 1
-      ? `Google, Outlook & Yahoo quick-add your next deadline — "${next.label}" (${next.display}). Apple/.ics grabs all ${eligible.length} deadlines at once.`
-      : `Adds "${next.label}" (${next.display}) to your calendar.`;
+      ? T.calendarModalSubtitleMulti(next.label, next.display, eligible.length)
+      : T.calendarModalSubtitleSingle(next.label, next.display);
     calendarModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
