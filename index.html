@@ -306,6 +306,38 @@
     <!-- TOAST -->
     <div id="toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800/95 backdrop-blur-md border border-zinc-700 text-zinc-100 text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-2xl z-50 opacity-0"></div>
 
+    <!-- CALENDAR PROVIDER PICKER -->
+    <div id="calendar-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+        <div id="calendar-modal-backdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="relative w-full sm:max-w-sm bg-zinc-900 border border-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="font-display text-lg font-bold text-white">Add to Your Calendar</h3>
+                <button id="calendar-modal-close" aria-label="Close" class="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p id="calendar-modal-subtitle" class="text-xs text-zinc-500 mb-4"></p>
+            <div class="space-y-2">
+                <button data-provider="google" class="btn-press calendar-provider-btn w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-xl flex items-center gap-3 px-4 text-sm">
+                    <i class="fa-brands fa-google text-[15px] w-5 text-center text-orange-400"></i>
+                    Google Calendar
+                </button>
+                <button data-provider="outlook" class="btn-press calendar-provider-btn w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-xl flex items-center gap-3 px-4 text-sm">
+                    <i class="fa-brands fa-microsoft text-[15px] w-5 text-center text-sky-400"></i>
+                    Outlook.com
+                </button>
+                <button data-provider="yahoo" class="btn-press calendar-provider-btn w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-xl flex items-center gap-3 px-4 text-sm">
+                    <i class="fa-brands fa-yahoo text-[15px] w-5 text-center text-violet-400"></i>
+                    Yahoo Calendar
+                </button>
+                <button data-provider="ics" class="btn-press calendar-provider-btn w-full bg-gradient-to-r from-orange-500 to-pink-600 hover:brightness-110 text-white font-bold py-3 rounded-xl flex items-center gap-3 px-4 text-sm shadow-md shadow-pink-600/20">
+                    <i class="fa-brands fa-apple text-[15px] w-5 text-center"></i>
+                    Apple Calendar / Other (.ics)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="px-4 py-4 text-center relative z-10">
         <div class="flex items-center justify-center gap-3 mb-2 text-[11px]">
@@ -1150,9 +1182,91 @@
     }
   }
 
+  // ---------------------------------------------------------------------
+  // CALENDAR PROVIDER PICKER — one tap adds the event straight into
+  // Google/Outlook/Yahoo's own calendar (no file download, no "where did
+  // that go?" moment), or falls back to a universal .ics for Apple Calendar
+  // and everything else. Google/Outlook/Yahoo only support one event per
+  // link, so when there's more than one deadline those three quick-add the
+  // soonest one; the .ics option always bundles all of them.
+  const calendarModal = document.getElementById('calendar-modal');
+  const calendarModalBackdrop = document.getElementById('calendar-modal-backdrop');
+  const calendarModalClose = document.getElementById('calendar-modal-close');
+  const calendarModalSubtitle = document.getElementById('calendar-modal-subtitle');
+  let calendarModalData = null;
+
+  function nextEligibleDeadlines(data) {
+    return data.deadlines.filter(d => d.icsEligible && d.dateObj).slice().sort((a, b) => a.dateObj - b.dateObj);
+  }
+
+  function buildCalendarUrls(data) {
+    const eligible = nextEligibleDeadlines(data);
+    const next = eligible[0];
+    if (!next) return null;
+    const course = data.course;
+    const title = `${course.code ? course.code + ': ' : ''}${next.label}`;
+    const details = 'Simplified by SyllabusTLDR.com — Skip the text wall.';
+    const start = next.dateObj;
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    const startCompact = dateToICSDate(start);
+    const endCompact = dateToICSDate(end);
+    const startISO = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+    const endISO = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
+    return {
+      google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startCompact}/${endCompact}&details=${encodeURIComponent(details)}`,
+      outlook: `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&allday=true&startdt=${startISO}&enddt=${endISO}&subject=${encodeURIComponent(title)}&body=${encodeURIComponent(details)}`,
+      yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(title)}&st=${startCompact}&dur=allday&desc=${encodeURIComponent(details)}`
+    };
+  }
+
+  function openCalendarModal(data) {
+    const eligible = nextEligibleDeadlines(data);
+    if (!eligible.length) {
+      const msg = data.deadlines.length
+        ? "Deadlines only reference week numbers — no exact dates to sync yet."
+        : "No specific dates found — nothing to sync yet.";
+      showToast(msg);
+      return;
+    }
+    calendarModalData = data;
+    const next = eligible[0];
+    calendarModalSubtitle.textContent = eligible.length > 1
+      ? `Google, Outlook & Yahoo quick-add your next deadline — "${next.label}" (${next.display}). Apple/.ics grabs all ${eligible.length} deadlines at once.`
+      : `Adds "${next.label}" (${next.display}) to your calendar.`;
+    calendarModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCalendarModal() {
+    calendarModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    calendarModalData = null;
+  }
+
+  calendarModalBackdrop.addEventListener('click', closeCalendarModal);
+  calendarModalClose.addEventListener('click', closeCalendarModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !calendarModal.classList.contains('hidden')) closeCalendarModal();
+  });
+  document.querySelectorAll('.calendar-provider-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!calendarModalData) return;
+      const provider = btn.dataset.provider;
+      if (provider === 'ics') {
+        downloadICS(calendarModalData);
+        closeCalendarModal();
+        return;
+      }
+      const urls = buildCalendarUrls(calendarModalData);
+      if (urls && urls[provider]) window.open(urls[provider], '_blank', 'noopener');
+      closeCalendarModal();
+    });
+  });
+
   const onCalendarClick = () => {
     if (!lastParsed) return;
-    downloadICS(lastParsed);
+    openCalendarModal(lastParsed);
   };
   calendarBtn.addEventListener('click', onCalendarClick);
   if (calendarBtnBottom) calendarBtnBottom.addEventListener('click', onCalendarClick);
