@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<!-- Consent Mode v2 — default to denied for ad/analytics storage until the
+     visitor makes a choice in the cookie banner below. Must run before
+     gtag.js loads so the very first hit already respects it. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<script>
   gtag('js', new Date());
   gtag('config', 'G-CQT3CXF341');
 </script>
@@ -386,13 +399,70 @@
 
     <!-- FOOTER -->
     <footer class="px-4 py-4 text-center relative z-10">
-        <div class="flex items-center justify-center gap-3 mb-2 text-[11px]">
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mb-2 text-[11px]">
+            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">About</a>
+            <span class="text-zinc-800">•</span>
+            <a href="/contact/" class="text-zinc-600 hover:text-zinc-400 transition">Contact</a>
+            <span class="text-zinc-800">•</span>
+            <a href="/blog/" class="text-zinc-600 hover:text-zinc-400 transition">Blog</a>
+            <span class="text-zinc-800">•</span>
             <a href="/terms-of-service.html" class="text-zinc-600 hover:text-zinc-400 transition">Terms of Service</a>
             <span class="text-zinc-800">•</span>
             <a href="/privacy-policy.html" class="text-zinc-600 hover:text-zinc-400 transition">Privacy Policy</a>
         </div>
         <p class="text-[11px] text-zinc-600">© 2026 SyllabusTLDR • Built for fast mobile execution.</p>
+        <p class="text-[11px] text-zinc-700 mt-1">SyllabusTLDR is operated by EIGHTFINITY LTD, a registered company in the United Kingdom.</p>
     </footer>
+
+    <!-- COOKIE CONSENT BANNER -->
+    <div id="consent-banner" class="hidden fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4">
+        <div class="max-w-xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <p class="text-xs text-zinc-400 leading-relaxed flex-1">
+                We use cookies for analytics and, once ads are enabled, to show relevant ads. Read our
+                <a href="/privacy-policy.html" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">Privacy Policy</a>.
+            </p>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Reject</button>
+                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Accept All</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+      'use strict';
+      var KEY = 'stldr_consent';
+      var banner = document.getElementById('consent-banner');
+      var stored = null;
+      try { stored = localStorage.getItem(KEY); } catch (e) {}
+
+      function updateConsent(granted) {
+        if (typeof gtag !== 'function') return;
+        gtag('consent', 'update', {
+          ad_storage: granted ? 'granted' : 'denied',
+          ad_user_data: granted ? 'granted' : 'denied',
+          ad_personalization: granted ? 'granted' : 'denied',
+          analytics_storage: granted ? 'granted' : 'denied'
+        });
+      }
+
+      if (stored === 'granted' || stored === 'denied') {
+        updateConsent(stored === 'granted');
+      } else if (banner) {
+        banner.classList.remove('hidden');
+      }
+
+      function choose(granted) {
+        try { localStorage.setItem(KEY, granted ? 'granted' : 'denied'); } catch (e) {}
+        updateConsent(granted);
+        if (banner) banner.classList.add('hidden');
+      }
+
+      var acceptBtn = document.getElementById('consent-accept');
+      var rejectBtn = document.getElementById('consent-reject');
+      if (acceptBtn) acceptBtn.addEventListener('click', function () { choose(true); });
+      if (rejectBtn) rejectBtn.addEventListener('click', function () { choose(false); });
+    })();
+    </script>
 
 <script>
 (function () {

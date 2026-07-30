@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f97316%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23db2777%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2224%22%20fill%3D%22url%28%2523g%29%22/%3E%3Cpath%20d%3D%22M56%2012%20L26%2056%20H45%20L38%2088%20L74%2040%20H52%20Z%22%20fill%3D%22white%22/%3E%3C/svg%3E">
+<title>How to Map Your Entire Semester Deadlines During Syllabus Week</title>
+<meta name="description" content="A step-by-step system for turning four or five separate syllabi into one master deadline calendar before week two of the semester even starts.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://syllabustldr.com/blog/map-your-semester-deadlines/">
+<meta property="og:title" content="How to Map Your Entire Semester Deadlines During Syllabus Week">
+<meta property="og:description" content="A step-by-step system for turning four or five separate syllabi into one master deadline calendar before week two even starts.">
+<meta property="og:url" content="https://syllabustldr.com/blog/map-your-semester-deadlines/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+
+<!-- Consent Mode v2 — default to denied for ad/analytics storage until the
+     visitor makes a choice in the cookie banner below. Must run before
+     gtag.js loads so the very first hit already respects it. -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CQT3CXF341"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-CQT3CXF341');
+</script>
+
+<link rel="stylesheet" href="/tailwind.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .font-display { font-family: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 999px; }
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+    <!-- HEADER -->
+    <header class="border-b border-zinc-800/80 bg-zinc-950/60 backdrop-blur-xl sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-br from-orange-500 to-pink-600 text-white p-2 rounded-xl shadow-lg shadow-orange-600/30">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <p class="font-display font-bold tracking-tight text-xl bg-gradient-to-r from-orange-400 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent">SyllabusTLDR</p>
+                    <p class="text-xs text-zinc-500">Zero logins • 2-second summary</p>
+                </div>
+            </a>
+            <a href="/" class="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to app
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="flex-grow px-4 py-10 max-w-2xl mx-auto w-full relative z-10">
+        <nav class="text-xs text-zinc-500 mb-6 flex items-center gap-1.5" aria-label="Breadcrumb">
+            <a href="/" class="hover:text-zinc-300 transition">Home</a>
+            <span>/</span>
+            <a href="/blog/" class="hover:text-zinc-300 transition">Blog</a>
+            <span>/</span>
+            <span class="text-zinc-400">Deadline planning</span>
+        </nav>
+
+        <article class="space-y-8 text-sm leading-relaxed text-zinc-300">
+            <header class="space-y-2 mb-2">
+                <span class="text-[11px] font-black tracking-widest text-orange-400 uppercase">Deadline planning</span>
+                <h1 class="font-display text-3xl font-bold tracking-tight text-white leading-tight">How to Map Your Entire Semester Deadlines During Syllabus Week</h1>
+                <p class="text-xs text-zinc-500">8 min read</p>
+            </header>
+
+            <p>Syllabus week hands you the entire semester in advance — every exam date, every paper deadline, every project checkpoint — and almost nobody uses that information the way it's meant to be used. Most students read each syllabus once, absorb a vague sense of "this class is busy," and then rediscover every deadline in real time as it approaches, one stressful week at a time. The alternative takes about an hour of focused work in week one and changes how the rest of your semester feels: build a single master calendar that holds every deadline from every class, cross-referenced against each other, before any of them are actually close.</p>
+
+            <section class="space-y-3">
+                <h2 class="font-display text-xl font-bold text-white">Why One Calendar Beats Five Syllabi</h2>
+                <p>The problem with leaving deadlines scattered across five separate PDFs isn't that the information is missing — it's that it's siloed. You can know, in isolation, that your history paper is due October 14th and that your economics midterm is October 15th, without ever noticing that those two facts collide until the week they're both suddenly due. A master calendar's entire value is in that cross-referencing: it turns five lists you'd have to mentally overlay into one view where collisions are visible from day one, while you still have eight weeks to plan around them instead of two days.</p>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="font-display text-xl font-bold text-white">The Mapping System, Step by Step</h2>
+
+                <div class="space-y-2">
+                    <h3 class="font-display text-base font-bold text-white">Step 1: Extract every graded date first, ignore everything else</h3>
+                    <p>On your first pass through each syllabus, ignore the course description, the learning objectives, and the week-by-week topic list. You're looking for exactly one thing: any date attached to a grade — exams, papers, projects, presentations, quizzes, and problem sets. Write each one down with the course name, the date, and roughly how much it's worth. Don't try to organize yet; just capture everything in one place.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display text-base font-bold text-white">Step 2: Put every date on one shared calendar, not five separate ones</h3>
+                    <p>This is the step most students skip — they'll add each class's deadlines to a planner but keep mental note of them by class rather than by week. Put everything on a single calendar view (a physical planner, Google Calendar, or whatever you already check daily) so a busy week shows up as visually busy regardless of which class each item belongs to. The goal is to be able to glance at any given week and immediately see total load, not per-class load.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display text-base font-bold text-white">Step 3: Flag collision weeks immediately</h3>
+                    <p>Once everything is on one calendar, scan for weeks where two or more major deadlines land within 48 hours of each other. These are your highest-risk weeks for the entire semester, and you now know about them in week one instead of discovering them in week nine. Mark them clearly — a different color, a star, whatever gets your attention — because these are the weeks where you'll want to start assignments early rather than on the usual timeline.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display text-base font-bold text-white">Step 4: Work backward from each major deadline</h3>
+                    <p>For anything worth more than about 15% of a course grade, don't just note the due date — note a self-imposed "start by" date roughly one to two weeks earlier, especially for anything landing in a collision week you flagged in step 3. This is the single highest-leverage habit in this whole system: it converts a due date, which is a passive fact, into a start date, which is an action you actually control.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-display text-base font-bold text-white">Step 5: Re-check the calendar after the first "subject to change" update</h3>
+                    <p>Syllabi shift. A professor moves an exam back a week, a project deadline gets extended, a guest lecture bumps the schedule. Set a recurring reminder — once a month is usually enough — to re-check each course's current syllabus or learning management system page against your master calendar, and correct any drift. A calendar built once in week one and never updated slowly becomes wrong; a calendar you spot-check monthly stays trustworthy all semester.</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="font-display text-xl font-bold text-white">What to Do When You're Already Behind</h2>
+                <p>Not everyone reads this in week one. If you're picking up this system in week six with no master calendar yet, don't try to reconstruct the whole semester retroactively in one sitting — that's exactly the kind of overwhelming task that gets postponed indefinitely. Instead, do a truncated version: pull just the next four weeks of deadlines from every class, right now, onto one shared view. That narrower window still gives you the core benefit — visible collisions, enough lead time to start early — without requiring you to re-read four months of syllabi you've already lived through. Extend it forward by another few weeks once the immediate picture is under control.</p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="font-display text-xl font-bold text-white">Doing This Fast, Not Slow</h2>
+                <p>The honest barrier to this system isn't the concept, it's the time cost of step 1 — manually re-reading five dense PDFs to extract dates is exactly the kind of tedious first pass students avoid. That's the specific problem <a href="/" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">SyllabusTLDR</a> is built to remove: drop each syllabus in and it pulls out every flagged deadline (due dates, exams, submissions) into a clean timeline in seconds, entirely in your browser, so step 1 takes minutes instead of an evening — leaving you the actual time to do the parts of this system that need a human: spotting collisions and deciding where to start early. If you haven't yet done a first pass on what each syllabus actually contains, our guide on <a href="/blog/how-to-read-a-college-syllabus/" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">reading a college syllabus properly</a> is worth doing first.</p>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="px-4 py-6 text-center relative z-10 border-t border-zinc-800/60 mt-8">
+        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2 text-xs">
+            <a href="/" class="text-zinc-500 hover:text-zinc-300 transition">App</a>
+            <span class="text-zinc-700">•</span>
+            <a href="/about/" class="text-zinc-500 hover:text-zinc-300 transition">About</a>
+            <span class="text-zinc-700">•</span>
+            <a href="/contact/" class="text-zinc-500 hover:text-zinc-300 transition">Contact</a>
+            <span class="text-zinc-700">•</span>
+            <a href="/blog/" class="text-zinc-500 hover:text-zinc-300 transition">Blog</a>
+            <span class="text-zinc-700">•</span>
+            <a href="/terms-of-service.html" class="text-zinc-500 hover:text-zinc-300 transition">Terms of Service</a>
+            <span class="text-zinc-700">•</span>
+            <a href="/privacy-policy.html" class="text-zinc-500 hover:text-zinc-300 transition">Privacy Policy</a>
+        </div>
+        <p class="text-[11px] text-zinc-600">© 2026 SyllabusTLDR • Built for fast mobile execution.</p>
+        <p class="text-[11px] text-zinc-700 mt-1">SyllabusTLDR is operated by EIGHTFINITY LTD, a registered company in the United Kingdom.</p>
+    </footer>
+
+    <!-- COOKIE CONSENT BANNER -->
+    <div id="consent-banner" class="hidden fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4">
+        <div class="max-w-xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <p class="text-xs text-zinc-400 leading-relaxed flex-1">
+                We use cookies for analytics and, once ads are enabled, to show relevant ads. Read our
+                <a href="/privacy-policy.html" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">Privacy Policy</a>.
+            </p>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Reject</button>
+                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Accept All</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+      'use strict';
+      var KEY = 'stldr_consent';
+      var banner = document.getElementById('consent-banner');
+      var stored = null;
+      try { stored = localStorage.getItem(KEY); } catch (e) {}
+
+      function updateConsent(granted) {
+        if (typeof gtag !== 'function') return;
+        gtag('consent', 'update', {
+          ad_storage: granted ? 'granted' : 'denied',
+          ad_user_data: granted ? 'granted' : 'denied',
+          ad_personalization: granted ? 'granted' : 'denied',
+          analytics_storage: granted ? 'granted' : 'denied'
+        });
+      }
+
+      if (stored === 'granted' || stored === 'denied') {
+        updateConsent(stored === 'granted');
+      } else if (banner) {
+        banner.classList.remove('hidden');
+      }
+
+      function choose(granted) {
+        try { localStorage.setItem(KEY, granted ? 'granted' : 'denied'); } catch (e) {}
+        updateConsent(granted);
+        if (banner) banner.classList.add('hidden');
+      }
+
+      var acceptBtn = document.getElementById('consent-accept');
+      var rejectBtn = document.getElementById('consent-reject');
+      if (acceptBtn) acceptBtn.addEventListener('click', function () { choose(true); });
+      if (rejectBtn) rejectBtn.addEventListener('click', function () { choose(false); });
+    })();
+    </script>
+
+</body>
+</html>
