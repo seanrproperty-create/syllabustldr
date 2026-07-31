@@ -25,12 +25,14 @@
 // content-queue/README.md for why, and for the queue file schema.
 
 import { mkdirSync, writeFileSync, existsSync, appendFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { LANG_ORDER, LANG_META } from './lib/lang-meta.js';
 import { translateArticle } from './lib/translate.js';
 import { renderArticleHtml } from './lib/render-article.js';
 import { addArticleToSitemap } from './lib/sitemap.js';
 import { updateHubPage } from './lib/hub.js';
+import { runQualityGate } from './lib/quality-gate.js';
 import {
   getInProgressArticle,
   getNextQueuedArticle,
@@ -54,6 +56,18 @@ function articleFilePath(lang, slug) {
 function writeGithubOutput(slug) {
   if (!process.env.GITHUB_OUTPUT) return;
   appendFileSync(process.env.GITHUB_OUTPUT, `slug=${slug}\n`);
+}
+
+function writeGithubOutputValue(name, value) {
+  if (!process.env.GITHUB_OUTPUT) return;
+  appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
+}
+
+/** Multiline values need GitHub's heredoc output format, not a plain KEY=value line. */
+function writeGithubOutputMultiline(name, value) {
+  if (!process.env.GITHUB_OUTPUT) return;
+  const delimiter = randomUUID();
+  appendFileSync(process.env.GITHUB_OUTPUT, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
 }
 
 function isArticleStartAllowedToday() {
@@ -137,9 +151,14 @@ async function main() {
     }
   }
 
-  if (process.env.GITHUB_OUTPUT) {
-    appendFileSync(process.env.GITHUB_OUTPUT, `rollout-complete=${rolloutComplete}\n`);
-    appendFileSync(process.env.GITHUB_OUTPUT, `langs-done=${langsDoneAfterRun}\n`);
+  writeGithubOutputValue('rollout-complete', rolloutComplete);
+  writeGithubOutputValue('langs-done', langsDoneAfterRun);
+
+  if (rolloutComplete) {
+    const { pass, problems } = runQualityGate(article.slug);
+    console.log(pass ? '\nQuality gate: PASS' : `\nQuality gate: FAIL\n${problems.map((p) => `  - ${p}`).join('\n')}`);
+    writeGithubOutputValue('quality-gate-pass', pass);
+    writeGithubOutputMultiline('quality-gate-problems', problems.join('\n'));
   }
 
   if (written.length > 0) {

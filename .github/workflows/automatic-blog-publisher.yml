@@ -10,9 +10,19 @@ name: Automatic Blog Publisher
 #
 # Every run's changes land as commits on the SAME per-article branch
 # (automated/blog-publish-<slug>), so one article's rollout accumulates
-# into one pull request across its ~5-7 days instead of opening a new PR
-# every day. Nothing goes live until that PR is reviewed and merged — this
-# workflow never pushes directly to main.
+# into one pull request across its ~5-7 days.
+#
+# THIS PUBLISHES WITHOUT HUMAN REVIEW BY DESIGN. Once a rollout finishes
+# (all 10 languages), scripts/lib/quality-gate.js runs a structural check
+# (broken links, missing/mangled brand names, untranslated fragments,
+# truncated pages). If it passes, this workflow merges the PR itself —
+# nothing to click. That check is NOT real editorial or translation-
+# accuracy review; it only catches "the pipeline broke," not "the
+# translation reads badly." If it fails, the PR is left open (unmerged,
+# so nothing bad goes live) and a GitHub issue is filed so a real person
+# finds out without needing to babysit the Pull Requests tab. See
+# templates/scheduled-content-pipeline.md's "Merging" section in the
+# one-page-site skill for why this is the tradeoff, not a free lunch.
 
 on:
   schedule:
@@ -22,6 +32,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   publish:
@@ -59,6 +70,7 @@ jobs:
           fi
 
       - name: Open or update pull request
+        id: pr
         if: steps.changes.outputs.has-changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
@@ -67,21 +79,44 @@ jobs:
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           branch: automated/blog-publish-${{ steps.publish.outputs.slug }}
-          # The title/labels flip once every language is done, so you can
-          # tell at a glance from the PR list alone whether it's safe to
-          # merge — no need to open the diff and count language folders.
           title: >-
             ${{ steps.publish.outputs.rollout-complete == 'true'
-              && format('✅ Ready to merge — {0}', steps.publish.outputs.slug)
+              && format('Automated blog publish — {0}', steps.publish.outputs.slug)
               || format('🔄 Rolling out ({0}/9 languages) — {1}', steps.publish.outputs.langs-done, steps.publish.outputs.slug) }}
           body: |
             Opened/updated automatically by `.github/workflows/automatic-blog-publisher.yml`.
 
-            ${{ steps.publish.outputs.rollout-complete == 'true' && '**All 10 languages are published — this is ready to review and merge.**' || format('**Still rolling out — {0}/9 non-English languages published so far.** Each day adds a new commit here. Wait for the title to change to "✅ Ready to merge" before merging; merging early ships a partially-translated article.', steps.publish.outputs.langs-done) }}
+            ${{ steps.publish.outputs.rollout-complete == 'true' && 'All 10 languages are published. If the quality gate passes, this merges itself — no action needed. If it fails, see the linked issue.' || format('Still rolling out — {0}/9 non-English languages published so far. Each day adds a new commit here.', steps.publish.outputs.langs-done) }}
 
             Translation quality note: body copy is machine-translated via a
             free, unofficial Google Translate client (see
-            `scripts/lib/translate.js` for why), not reviewed by a human or
-            an LLM. Spot-check at least one non-English page before merging.
-          labels: ${{ steps.publish.outputs.rollout-complete == 'true' && 'automated-content,ready-to-merge' || 'automated-content,rolling-out' }}
+            `scripts/lib/translate.js` for why). The quality gate checks
+            structure, not translation accuracy.
+          labels: ${{ steps.publish.outputs.rollout-complete == 'true' && 'automated-content,quality-gate-pending' || 'automated-content,rolling-out' }}
           delete-branch: true
+
+      - name: Auto-merge if the quality gate passed
+        if: steps.publish.outputs.rollout-complete == 'true' && steps.publish.outputs.quality-gate-pass == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" --merge --delete-branch
+
+      - name: File an issue if the quality gate failed
+        if: steps.publish.outputs.rollout-complete == 'true' && steps.publish.outputs.quality-gate-pass == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ steps.publish.outputs.slug }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+          PROBLEMS: ${{ steps.publish.outputs.quality-gate-problems }}
+        run: |
+          BODY="The automated publish pipeline finished rolling out **$SLUG** into all 10 languages, but the pre-merge quality check failed, so it was NOT auto-merged. PR #$PR_NUMBER is still open for manual review.
+
+          **Problems found:**
+          $PROBLEMS
+
+          This only checks structure (broken links, missing brand names, untranslated fragments, truncated pages) — it doesn't mean the translation itself is necessarily bad, just that something needs a human look before this goes live."
+          gh issue create \
+            --title "Quality gate failed: $SLUG" \
+            --label "automated-content,needs-review" \
+            --body "$BODY"

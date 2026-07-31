@@ -9,6 +9,15 @@ import { CHROME_STRINGS } from './chrome-strings.js';
 
 const FAVICON_DATA_URI = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f97316%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23db2777%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2224%22%20fill%3D%22url%28%2523g%29%22/%3E%3Cpath%20d%3D%22M56%2012%20L26%2056%20H45%20L38%2088%20L74%2040%20H52%20Z%22%20fill%3D%22white%22/%3E%3C/svg%3E';
 
+// The blog hub page (the article listing at /blog/) only exists in
+// English — building translated hub pages is a separate, not-yet-built
+// feature (see the project report). Every "back to blog" link points at
+// the one hub that actually exists, in every language, rather than a
+// per-language hub that would 404. Links to specific OTHER ARTICLES
+// (via localizeUrl below) are unaffected — once an article's rollout
+// finishes, its translated pages genuinely do exist per language.
+const BLOG_HUB_URL = `${SITE_ORIGIN}/blog/`;
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -140,7 +149,7 @@ ${buildHreflangBlock(article.slug)}
   "inLanguage": "${meta.hreflang}",
   "author": { "@type": "Organization", "name": "EIGHTFINITY LTD Academic Engineering Team" },
   "publisher": { "@type": "Organization", "name": "EIGHTFINITY LTD", "url": "${SITE_ORIGIN}/" },
-  "isPartOf": { "@type": "Blog", "name": "SyllabusTLDR Blog", "url": "${homeUrl(lang)}blog/" }
+  "isPartOf": { "@type": "Blog", "name": "SyllabusTLDR Blog", "url": "${BLOG_HUB_URL}" }
 }
 </script>
 <script type="application/ld+json">
@@ -149,7 +158,7 @@ ${buildHreflangBlock(article.slug)}
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": ${JSON.stringify(chrome.breadcrumbHome)}, "item": ${JSON.stringify(homeUrl(lang))} },
-    { "@type": "ListItem", "position": 2, "name": ${JSON.stringify(chrome.breadcrumbBlog)}, "item": ${JSON.stringify(homeUrl(lang) + 'blog/')} },
+    { "@type": "ListItem", "position": 2, "name": ${JSON.stringify(chrome.breadcrumbBlog)}, "item": ${JSON.stringify(BLOG_HUB_URL)} },
     { "@type": "ListItem", "position": 3, "name": ${JSON.stringify(article.breadcrumbLabel)}, "item": ${JSON.stringify(url)} }
   ]
 }
@@ -216,7 +225,7 @@ ${buildHreflangBlock(article.slug)}
         <nav class="text-xs text-zinc-500 mb-6 flex items-center gap-1.5" aria-label="Breadcrumb">
             <a href="${homeUrl(lang)}" class="hover:text-zinc-300 transition">${escapeHtml(chrome.breadcrumbHome)}</a>
             <span>/</span>
-            <a href="${homeUrl(lang)}blog/" class="hover:text-zinc-300 transition">${escapeHtml(chrome.breadcrumbBlog)}</a>
+            <a href="${BLOG_HUB_URL}" class="hover:text-zinc-300 transition">${escapeHtml(chrome.breadcrumbBlog)}</a>
             <span>/</span>
             <span class="text-zinc-400">${escapeHtml(article.breadcrumbLabel)}</span>
         </nav>
@@ -246,7 +255,7 @@ ${sectionsHtml}
             <span class="text-zinc-700">•</span>
             <a href="/contact/" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerContact)}</a>
             <span class="text-zinc-700">•</span>
-            <a href="${homeUrl(lang)}blog/" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerBlog)}</a>
+            <a href="${BLOG_HUB_URL}" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerBlog)}</a>
             <span class="text-zinc-700">•</span>
             <a href="/terms-of-service.html" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerTerms)}</a>
             <span class="text-zinc-700">•</span>
