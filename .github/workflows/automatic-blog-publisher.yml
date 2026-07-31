@@ -8,74 +8,71 @@ name: Automatic Blog Publisher
 # pipeline. See scripts/publish-weekly.js for the full staging logic and
 # content-queue/README.md for how the queue works.
 #
-# Every run's changes land as commits on the SAME per-article branch
-# (automated/blog-publish-<slug>), so one article's rollout accumulates
-# into one pull request across its ~5-7 days.
+# EVERY RUN PUSHES DIRECTLY TO main. No PR, no held-open branch. This is
+# the second design tried here, not the first — the original design used
+# peter-evans/create-pull-request to accumulate each day's commits onto
+# one long-lived branch, held open until the whole rollout finished. That
+# broke in two different ways once tested against real GitHub Actions runs
+# (not just local mocked tests):
+#   1. actions/checkout always checks out the default branch on schedule
+#      AND workflow_dispatch triggers — there's no way around that. Since
+#      the branch was deliberately left unmerged until the whole rollout
+#      finished, `main` never reflected yesterday's progress, so every run
+#      saw a "fresh" article and restarted it from English.
+#   2. Even after patching (1) to explicitly check out the in-progress
+#      branch, peter-evans/create-pull-request turned out not to accumulate
+#      commits the way that design assumed — it rebuilds `branch` as
+#      `base` + only the files that changed as an uncommitted diff during
+#      that specific run, and force-pushes over whatever was there before.
+#      It's built for "regenerate one commit reflecting current state"
+#      (an auto-formatter bot, say), not "accrete independent contributions
+#      across many separate runs." That silently deleted prior days'
+#      already-published languages from the branch.
+# Pushing straight to main on every run sidesteps both bugs entirely:
+# there's no cross-run branch state to lose, because `main` IS the state,
+# updated immediately every run. See templates/scheduled-content-pipeline.md
+# in the one-page-site skill for the "direct-to-main" pattern this now
+# follows, and why peter-evans/create-pull-request is a poor fit for a
+# multi-run-accretive pipeline specifically (it's still fine for the
+# common single-run-diff use case it's built for).
 #
-# THIS PUBLISHES WITHOUT HUMAN REVIEW BY DESIGN. Once a rollout finishes
-# (all 10 languages), scripts/lib/quality-gate.js runs a structural check
-# (broken links, missing/mangled brand names, untranslated fragments,
-# truncated pages). If it passes, this workflow merges the PR itself —
-# nothing to click. That check is NOT real editorial or translation-
-# accuracy review; it only catches "the pipeline broke," not "the
-# translation reads badly." If it fails, the PR is left open (unmerged,
-# so nothing bad goes live) and a GitHub issue is filed so a real person
-# finds out without needing to babysit the Pull Requests tab. See
-# templates/scheduled-content-pipeline.md's "Merging" section in the
-# one-page-site skill for why this is the tradeoff, not a free lunch.
-#
-# IMPORTANT — why this checks out a branch other than the default one:
-# actions/checkout defaults to the default branch (main) on every trigger
-# type this workflow uses (schedule AND workflow_dispatch) — there is no
-# way to make a schedule trigger check out anything else. The staged
-# rollout (see publish-weekly.js) tracks progress by reading which files
-# already exist on disk, and the PR for an in-progress rollout is
-# deliberately left UNMERGED until every language is done. Put those two
-# facts together and every run would check out main, find no trace of
-# yesterday's progress (it only lives on the still-open PR branch), and
-# restart the article from English — forever, never actually finishing.
-# That's a real bug that shipped and was only caught by watching a live
-# run. The "Find an in-progress rollout branch" step below is the fix: it
-# resolves the correct ref to check out BEFORE checkout runs, so a
-# continuing rollout resumes on its own branch (seeing the already-
-# translated files) instead of starting over on main. It relies on
-# content-queue/lib/queue.js's own invariant that at most one rollout is
-# ever in progress at a time (getInProgressArticle() throws otherwise), so
-# "the first branch matching the naming pattern" is always the right one.
+# THE REAL TRADEOFF OF THIS DESIGN: content goes live BEFORE it's checked,
+# not instead of being checked. English (and each day's language batch)
+# publishes to production the moment it's rendered — there is no held-back
+# review window at all now, not even the earlier structural-gate-before-
+# merge. scripts/lib/quality-gate.js still runs once a rollout finishes
+# (all 10 languages), but it's now a POST-publish integrity check: if it
+# fails, the content is already live, and a GitHub issue is filed so a
+# human knows to go fix it — the gate no longer blocks anything from
+# publishing. This was confirmed explicitly with the project owner as the
+# accepted tradeoff for a zero-maintenance, many-sites-at-once workflow;
+# don't quietly reintroduce a pre-publish review step without checking
+# that's still wanted.
 
 on:
   schedule:
     - cron: '0 9 * * *' # daily, 09:00 UTC — the script itself decides whether there's anything to do
   workflow_dispatch: {}
 
+# Direct pushes to main need to be strictly serialized: two overlapping
+# runs (e.g. a manual workflow_dispatch firing while the daily schedule is
+# still running) would otherwise race to push and one would get a
+# non-fast-forward rejection. This queues a second run instead of letting
+# it run in parallel.
+concurrency:
+  group: automatic-blog-publisher
+  cancel-in-progress: false
+
 permissions:
   contents: write
-  pull-requests: write
   issues: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Find an in-progress rollout branch, if one exists
-        id: target-branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          existing=$(gh api "repos/${{ github.repository }}/branches" --paginate --jq '.[].name' \
-            | grep '^automated/blog-publish-' | sort | head -n1 || true)
-          if [ -n "$existing" ]; then
-            echo "Resuming in-progress rollout branch: $existing"
-            echo "ref=$existing" >> "$GITHUB_OUTPUT"
-          else
-            echo "No in-progress rollout branch found — starting fresh from the default branch."
-            echo "ref=${{ github.event.repository.default_branch }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.target-branch.outputs.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -95,77 +92,46 @@ jobs:
           PUBLISH_FORCE_START: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
         run: npm run publish-weekly
 
-      - name: Check whether anything changed
-        id: changes
+      - name: Commit and push directly to main
+        env:
+          SLUG: ${{ steps.publish.outputs.slug }}
         run: |
-          # git diff alone misses this on purpose: a continuation day only
-          # writes brand-new per-language files (untracked), it doesn't
-          # touch sitemap.xml/blog/index.html again — those are only
-          # touched on the day a rollout starts. `git diff --quiet` never
-          # sees untracked files, so it silently reported "no changes" on
-          # every continuation day, and that day's translated files never
-          # got committed at all. `git status --porcelain` catches new,
-          # modified, and staged paths, so it's the only correct check here.
+          # git diff alone misses newly-created files (untracked) — a
+          # continuation day only ever adds brand-new per-language files,
+          # it doesn't touch any already-tracked file. git status
+          # --porcelain is the only check here that catches untracked +
+          # modified + staged paths — git diff --quiet silently dropped a
+          # real day's translated output during testing (see
+          # scheduled-content-pipeline.md's gotchas for the full story).
           if [ -z "$(git status --porcelain)" ]; then
             echo "::warning::No changes this run — either nothing was due to start/continue, or content-queue/pending is empty. Check blog/BACKLOG.md and content-queue/pending/ if that's unexpected."
-            echo "has-changes=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-changes=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: publish daily language batch for ${SLUG:-queued article} [skip ci]"
+          # HEAD:main (not plain `main`) pushes whatever commit HEAD
+          # currently points at, regardless of whether checkout left the
+          # workspace on a real local `main` branch or a detached HEAD at
+          # main's tip — the latter is actions/checkout's default and
+          # would make a plain `git push origin main` ambiguous/fragile.
+          git push origin HEAD:main
 
-      - name: Open or update pull request
-        id: pr
-        if: steps.changes.outputs.has-changes == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chrono: automatically published semi-weekly educational article [skip ci]"
-          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          # Always explicit, even though checkout may already be sitting on
-          # this exact branch when resuming a rollout — without this, a
-          # resumed run would infer `base` from the currently checked-out
-          # branch (itself) and try to open a PR with identical head/base.
-          base: ${{ github.event.repository.default_branch }}
-          branch: automated/blog-publish-${{ steps.publish.outputs.slug }}
-          title: >-
-            ${{ steps.publish.outputs.rollout-complete == 'true'
-              && format('Automated blog publish — {0}', steps.publish.outputs.slug)
-              || format('🔄 Rolling out ({0}/9 languages) — {1}', steps.publish.outputs.langs-done, steps.publish.outputs.slug) }}
-          body: |
-            Opened/updated automatically by `.github/workflows/automatic-blog-publisher.yml`.
-
-            ${{ steps.publish.outputs.rollout-complete == 'true' && 'All 10 languages are published. If the quality gate passes, this merges itself — no action needed. If it fails, see the linked issue.' || format('Still rolling out — {0}/9 non-English languages published so far. Each day adds a new commit here.', steps.publish.outputs.langs-done) }}
-
-            Translation quality note: body copy is machine-translated via a
-            free, unofficial Google Translate client (see
-            `scripts/lib/translate.js` for why). The quality gate checks
-            structure, not translation accuracy.
-          labels: ${{ steps.publish.outputs.rollout-complete == 'true' && 'automated-content,quality-gate-pending' || 'automated-content,rolling-out' }}
-          delete-branch: true
-
-      - name: Auto-merge if the quality gate passed
-        if: steps.publish.outputs.rollout-complete == 'true' && steps.publish.outputs.quality-gate-pass == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" --merge --delete-branch
-
-      - name: File an issue if the quality gate failed
+      - name: File an issue if the finished rollout failed its post-publish check
         if: steps.publish.outputs.rollout-complete == 'true' && steps.publish.outputs.quality-gate-pass == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLUG: ${{ steps.publish.outputs.slug }}
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
           PROBLEMS: ${{ steps.publish.outputs.quality-gate-problems }}
         run: |
-          BODY="The automated publish pipeline finished rolling out **$SLUG** into all 10 languages, but the pre-merge quality check failed, so it was NOT auto-merged. PR #$PR_NUMBER is still open for manual review.
+          BODY="The automated publish pipeline finished rolling out **$SLUG** into every language and pushed it live, but the post-publish structural check found problems. This content is ALREADY LIVE on the site — this issue is a fix-it flag, not a merge gate.
 
           **Problems found:**
           $PROBLEMS
 
-          This only checks structure (broken links, missing brand names, untranslated fragments, truncated pages) — it doesn't mean the translation itself is necessarily bad, just that something needs a human look before this goes live."
+          This only checks structure (broken links, missing brand names, untranslated fragments, truncated pages) — it doesn't mean the translation itself is necessarily bad, just that something needs a human look."
           gh issue create \
-            --title "Quality gate failed: $SLUG" \
+            --title "Quality check failed (already live): $SLUG" \
             --label "automated-content,needs-review" \
             --body "$BODY"
