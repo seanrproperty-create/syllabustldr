@@ -67,22 +67,21 @@ jobs:
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           branch: automated/blog-publish-${{ steps.publish.outputs.slug }}
-          title: "Automated blog publish: ${{ steps.publish.outputs.slug }}"
+          # The title/labels flip once every language is done, so you can
+          # tell at a glance from the PR list alone whether it's safe to
+          # merge — no need to open the diff and count language folders.
+          title: >-
+            ${{ steps.publish.outputs.rollout-complete == 'true'
+              && format('✅ Ready to merge — {0}', steps.publish.outputs.slug)
+              || format('🔄 Rolling out ({0}/9 languages) — {1}', steps.publish.outputs.langs-done, steps.publish.outputs.slug) }}
           body: |
             Opened/updated automatically by `.github/workflows/automatic-blog-publisher.yml`.
 
-            This article's non-English languages publish a couple at a time
-            across several days (see `scripts/publish-weekly.js`) rather than
-            all at once, to avoid rate-limiting the free translation
-            endpoint. Each day's progress lands as a new commit on this same
-            branch/PR. **Wait until the rollout looks complete (check which
-            `{lang}/blog/${{ steps.publish.outputs.slug }}/` folders exist)
-            before merging** — merging early ships a partially-translated
-            article.
+            ${{ steps.publish.outputs.rollout-complete == 'true' && '**All 10 languages are published — this is ready to review and merge.**' || format('**Still rolling out — {0}/9 non-English languages published so far.** Each day adds a new commit here. Wait for the title to change to "✅ Ready to merge" before merging; merging early ships a partially-translated article.', steps.publish.outputs.langs-done) }}
 
             Translation quality note: body copy is machine-translated via a
             free, unofficial Google Translate client (see
             `scripts/lib/translate.js` for why), not reviewed by a human or
             an LLM. Spot-check at least one non-English page before merging.
-          labels: automated-content
+          labels: ${{ steps.publish.outputs.rollout-complete == 'true' && 'automated-content,ready-to-merge' || 'automated-content,rolling-out' }}
           delete-branch: true

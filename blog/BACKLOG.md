@@ -8,7 +8,7 @@ each translated language; the automated pipeline
 clears the queue — don't hand-edit those for queued/automated articles.
 
 ~~1. "How to Email a Professor: Templates for Extensions, Questions, and Office Hours"~~ — queued, see `content-queue/pending/2026-08-04-how-to-email-a-professor.json`.
-2. **"Syllabus Red Flags: Course Policies Worth Questioning Before You Drop or Add"** — mandatory attendance with no exceptions, no-drop exam policies, ambiguous curving language.
+~~2. "Syllabus Red Flags: Course Policies Worth Questioning Before You Drop or Add"~~ — queued, see `content-queue/pending/2026-08-11-syllabus-red-flags.json`.
 3. **"How to Choose Between Two Overlapping Electives Using Only the Syllabus"** — comparing grade weighting, workload signals, and deadline density before add/drop deadline.
 4. **"The Weighted GPA vs. Unweighted GPA Explainer for First-Year Students"** — how course-level weighting differs from syllabus-level grade weighting (avoid confusing the two).
 5. **"What 'Rolling Admissions to Office Hours' Actually Means and How to Use It"** — deep dive companion to the office-hours point in article 1.

@@ -111,9 +111,12 @@ async function main() {
   writeGithubOutput(article.slug);
   const alreadyDone = languagesAlreadyPublished(article.slug);
   const remaining = NON_ENGLISH_LANGS.filter((l) => !alreadyDone.includes(l));
+  let rolloutComplete = false;
+  let langsDoneAfterRun = alreadyDone.length;
 
   if (remaining.length === 0) {
     completeRollout(filename);
+    rolloutComplete = true;
     console.log(`All languages already published for "${article.slug}" — rollout complete.`);
   } else {
     const todaysBatch = remaining.slice(0, DAILY_LANGUAGE_BUDGET);
@@ -122,14 +125,21 @@ async function main() {
     for (const lang of todaysBatch) {
       written.push(await publishLanguage(article, lang, dates));
     }
+    langsDoneAfterRun = alreadyDone.length + todaysBatch.length;
 
     const stillRemaining = remaining.length - todaysBatch.length;
     if (stillRemaining === 0) {
       completeRollout(filename);
+      rolloutComplete = true;
       console.log(`\nRollout complete for "${article.slug}" — all ${NON_ENGLISH_LANGS.length} non-English languages published.`);
     } else {
       console.log(`\n${stillRemaining} language(s) remaining for "${article.slug}"; will continue on the next run.`);
     }
+  }
+
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `rollout-complete=${rolloutComplete}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `langs-done=${langsDoneAfterRun}\n`);
   }
 
   if (written.length > 0) {
