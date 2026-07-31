@@ -98,7 +98,15 @@ jobs:
       - name: Check whether anything changed
         id: changes
         run: |
-          if git diff --quiet && git diff --staged --quiet; then
+          # git diff alone misses this on purpose: a continuation day only
+          # writes brand-new per-language files (untracked), it doesn't
+          # touch sitemap.xml/blog/index.html again — those are only
+          # touched on the day a rollout starts. `git diff --quiet` never
+          # sees untracked files, so it silently reported "no changes" on
+          # every continuation day, and that day's translated files never
+          # got committed at all. `git status --porcelain` catches new,
+          # modified, and staged paths, so it's the only correct check here.
+          if [ -z "$(git status --porcelain)" ]; then
             echo "::warning::No changes this run — either nothing was due to start/continue, or content-queue/pending is empty. Check blog/BACKLOG.md and content-queue/pending/ if that's unexpected."
             echo "has-changes=false" >> "$GITHUB_OUTPUT"
           else
