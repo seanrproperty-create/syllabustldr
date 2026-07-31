@@ -1,11 +1,13 @@
 # Blog content backlog
 
-Candidate topics for the next 10-15 articles (English-only until Milestone 2
-ships translations). Not yet written — titles + angle only, for scoping future
-sessions. Published articles live in `blog/<slug>/index.html`; add each to
-`sitemap.xml` and the `/blog/` hub grid when written.
+Candidate topics for future articles. Not yet written — titles + angle only,
+for scoping future sessions. Published articles live in
+`blog/<slug>/index.html` (English) plus `{lang}/blog/<slug>/index.html` for
+each translated language; the automated pipeline
+(`content-queue/README.md`) handles sitemap and hub updates once an article
+clears the queue — don't hand-edit those for queued/automated articles.
 
-1. **"How to Email a Professor: Templates for Extensions, Questions, and Office Hours"** — the exact wording that gets a response, mapped to common syllabus scenarios (late work, grade disputes, absence).
+~~1. "How to Email a Professor: Templates for Extensions, Questions, and Office Hours"~~ — queued, see `content-queue/pending/2026-08-04-how-to-email-a-professor.json`.
 2. **"Syllabus Red Flags: Course Policies Worth Questioning Before You Drop or Add"** — mandatory attendance with no exceptions, no-drop exam policies, ambiguous curving language.
 3. **"How to Choose Between Two Overlapping Electives Using Only the Syllabus"** — comparing grade weighting, workload signals, and deadline density before add/drop deadline.
 4. **"The Weighted GPA vs. Unweighted GPA Explainer for First-Year Students"** — how course-level weighting differs from syllabus-level grade weighting (avoid confusing the two).

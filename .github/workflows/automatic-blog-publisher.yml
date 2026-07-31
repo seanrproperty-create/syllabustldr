@@ -1,15 +1,22 @@
 name: Automatic Blog Publisher
 
-# Twice a week, translates the next queued English article (content-queue/pending/)
-# into all 10 site languages and opens a pull request with the result.
-# Nothing goes live until that PR is reviewed and merged — this workflow never
-# pushes directly to main. See content-queue/README.md for how the queue works
-# and why: this job does not write article content, only distribute it.
+# Runs daily. Each run either starts the next queued article (only on
+# Tuesday/Friday, or on a manual run) or continues translating a couple
+# more languages for whichever article is already mid-rollout — never all
+# 9 non-English languages in one run, because that's what triggered a real
+# rate-limit from the free translation endpoint while building this
+# pipeline. See scripts/publish-weekly.js for the full staging logic and
+# content-queue/README.md for how the queue works.
+#
+# Every run's changes land as commits on the SAME per-article branch
+# (automated/blog-publish-<slug>), so one article's rollout accumulates
+# into one pull request across its ~5-7 days instead of opening a new PR
+# every day. Nothing goes live until that PR is reviewed and merged — this
+# workflow never pushes directly to main.
 
 on:
   schedule:
-    # Tuesday and Friday, 09:00 UTC.
-    - cron: '0 9 * * 2,5'
+    - cron: '0 9 * * *' # daily, 09:00 UTC — the script itself decides whether there's anything to do
   workflow_dispatch: {}
 
 permissions:
@@ -34,35 +41,48 @@ jobs:
 
       - name: Run publish-weekly
         id: publish
+        env:
+          # A manual run may as well be allowed to start a new article
+          # regardless of day — the person triggering it clearly wants
+          # something to happen.
+          PUBLISH_FORCE_START: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
         run: npm run publish-weekly
 
-      - name: Warn if the content queue was empty
-        if: success()
+      - name: Check whether anything changed
+        id: changes
         run: |
           if git diff --quiet && git diff --staged --quiet; then
-            echo "::warning::content-queue/pending was empty — no article published this run. Check blog/BACKLOG.md and add the next queue file."
+            echo "::warning::No changes this run — either nothing was due to start/continue, or content-queue/pending is empty. Check blog/BACKLOG.md and content-queue/pending/ if that's unexpected."
+            echo "has-changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-changes=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Open pull request
+      - name: Open or update pull request
+        if: steps.changes.outputs.has-changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chrono: automatically published semi-weekly educational article [skip ci]"
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          branch: automated/blog-publish-${{ github.run_number }}
-          title: "Automated blog publish: new article in 10 languages"
+          branch: automated/blog-publish-${{ steps.publish.outputs.slug }}
+          title: "Automated blog publish: ${{ steps.publish.outputs.slug }}"
           body: |
-            Opened automatically by `.github/workflows/automatic-blog-publisher.yml`.
+            Opened/updated automatically by `.github/workflows/automatic-blog-publisher.yml`.
 
-            This translates whatever was next in `content-queue/pending/` into
-            all 10 site languages, updates `sitemap.xml`, and adds it to the
-            English `/blog/` hub. Review the rendered pages before merging —
-            nothing here has gone live yet.
+            This article's non-English languages publish a couple at a time
+            across several days (see `scripts/publish-weekly.js`) rather than
+            all at once, to avoid rate-limiting the free translation
+            endpoint. Each day's progress lands as a new commit on this same
+            branch/PR. **Wait until the rollout looks complete (check which
+            `{lang}/blog/${{ steps.publish.outputs.slug }}/` folders exist)
+            before merging** — merging early ships a partially-translated
+            article.
 
             Translation quality note: body copy is machine-translated via a
             free, unofficial Google Translate client (see
-            `scripts/lib/translate.js` for why), not reviewed by a human or an
-            LLM. Spot-check at least one non-English page before merging.
+            `scripts/lib/translate.js` for why), not reviewed by a human or
+            an LLM. Spot-check at least one non-English page before merging.
           labels: automated-content
           delete-branch: true
