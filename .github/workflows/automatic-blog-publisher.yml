@@ -1,0 +1,68 @@
+name: Automatic Blog Publisher
+
+# Twice a week, translates the next queued English article (content-queue/pending/)
+# into all 10 site languages and opens a pull request with the result.
+# Nothing goes live until that PR is reviewed and merged — this workflow never
+# pushes directly to main. See content-queue/README.md for how the queue works
+# and why: this job does not write article content, only distribute it.
+
+on:
+  schedule:
+    # Tuesday and Friday, 09:00 UTC.
+    - cron: '0 9 * * 2,5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run publish-weekly
+        id: publish
+        run: npm run publish-weekly
+
+      - name: Warn if the content queue was empty
+        if: success()
+        run: |
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "::warning::content-queue/pending was empty — no article published this run. Check blog/BACKLOG.md and add the next queue file."
+          fi
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chrono: automatically published semi-weekly educational article [skip ci]"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          branch: automated/blog-publish-${{ github.run_number }}
+          title: "Automated blog publish: new article in 10 languages"
+          body: |
+            Opened automatically by `.github/workflows/automatic-blog-publisher.yml`.
+
+            This translates whatever was next in `content-queue/pending/` into
+            all 10 site languages, updates `sitemap.xml`, and adds it to the
+            English `/blog/` hub. Review the rendered pages before merging —
+            nothing here has gone live yet.
+
+            Translation quality note: body copy is machine-translated via a
+            free, unofficial Google Translate client (see
+            `scripts/lib/translate.js` for why), not reviewed by a human or an
+            LLM. Spot-check at least one non-English page before merging.
+          labels: automated-content
+          delete-branch: true

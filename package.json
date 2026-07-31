@@ -1,0 +1,16 @@
+{
+  "name": "syllabustldr-content-pipeline",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Automated bi-weekly blog publishing pipeline for syllabustldr.com. Translates a locally-authored English article into all 10 site languages and updates the sitemap. Does not write article content itself.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "publish-weekly": "node scripts/publish-weekly.js"
+  },
+  "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.1"
+  }
+}
