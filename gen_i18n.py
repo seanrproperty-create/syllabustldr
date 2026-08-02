@@ -519,6 +519,9 @@ NEW_STATIC_EN = [
     '                We use cookies for analytics and, once ads are enabled, to show relevant ads. Read our',
     '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Reject</button>',
     '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Accept All</button>',
+    '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Required &amp; Recommended Study Gear</span>',
+    '                    <p class="text-[11px] text-zinc-400">Need your books fast? Try Amazon Prime Student Free.</p>',
+    '                    <p class="text-[10px] text-zinc-500 italic">As an Amazon Associate, I earn from qualifying purchases.</p>',
 ]
 
 NEW_STATIC_TR = {
@@ -530,6 +533,9 @@ NEW_STATIC_TR = {
         '                Usamos cookies para análisis y, una vez habilitados los anuncios, para mostrar anuncios relevantes. Lee nuestra',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Rechazar</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Aceptar Todo</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Equipo de Estudio Requerido y Recomendado</span>',
+        '                    <p class="text-[11px] text-zinc-400">¿Necesitas tus libros rápido? Prueba Amazon Prime Student Gratis.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">Como asociado de Amazon, gano por las compras que califican.</p>',
     ],
     'fr': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">À propos</a>',
@@ -539,6 +545,9 @@ NEW_STATIC_TR = {
         '                Nous utilisons des cookies à des fins d\'analyse et, une fois les publicités activées, pour afficher des publicités pertinentes. Lisez notre',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Refuser</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Tout Accepter</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Matériel d\'Étude Requis et Recommandé</span>',
+        '                    <p class="text-[11px] text-zinc-400">Besoin de vos livres rapidement ? Essayez Amazon Prime Student Gratuitement.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises.</p>',
     ],
     'pt': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">Sobre</a>',
@@ -548,6 +557,9 @@ NEW_STATIC_TR = {
         '                Usamos cookies para análise e, quando os anúncios forem ativados, para exibir anúncios relevantes. Leia nossa',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Rejeitar</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Aceitar Tudo</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Material de Estudo Obrigatório e Recomendado</span>',
+        '                    <p class="text-[11px] text-zinc-400">Precisa dos seus livros rápido? Teste o Amazon Prime Student Grátis.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">Como associado da Amazon, ganho com compras qualificadas.</p>',
     ],
     'zh': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">关于我们</a>',
@@ -557,6 +569,9 @@ NEW_STATIC_TR = {
         '                我们使用 Cookie 进行数据分析，广告功能启用后也将用于展示相关广告。请阅读我们的',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">拒绝</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">全部接受</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">必修与推荐学习用品</span>',
+        '                    <p class="text-[11px] text-zinc-400">需要快速拿到课本？免费试用 Amazon Prime Student。</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">作为亚马逊会员，我从符合条件的购买中获得佣金。</p>',
     ],
     'de': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">Über uns</a>',
@@ -566,6 +581,9 @@ NEW_STATIC_TR = {
         '                Wir verwenden Cookies für Analysen und, sobald Werbung aktiviert ist, zur Anzeige relevanter Werbung. Lies unsere',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Ablehnen</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Alle akzeptieren</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Erforderliche &amp; empfohlene Lernmaterialien</span>',
+        '                    <p class="text-[11px] text-zinc-400">Bücher schnell benötigt? Amazon Prime Student kostenlos testen.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.</p>',
     ],
     'vi': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">Giới Thiệu</a>',
@@ -575,6 +593,9 @@ NEW_STATIC_TR = {
         '                Chúng tôi sử dụng cookie để phân tích và, khi quảng cáo được bật, để hiển thị quảng cáo phù hợp. Đọc',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">Từ Chối</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">Chấp Nhận Tất Cả</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Dụng Cụ Học Tập Bắt Buộc &amp; Khuyến Nghị</span>',
+        '                    <p class="text-[11px] text-zinc-400">Cần sách nhanh chóng? Thử ngay Amazon Prime Student Miễn Phí.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">Là một Đối tác Amazon, tôi kiếm được tiền từ các khoản mua hàng đủ điều kiện.</p>',
     ],
     'ko': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">소개</a>',
@@ -584,6 +605,9 @@ NEW_STATIC_TR = {
         '                당사는 분석을 위해 쿠키를 사용하며, 광고가 활성화되면 관련 광고를 표시하는 데에도 사용합니다. 자세히 알아보려면 다음을 확인하세요:',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">거부</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">모두 동의</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">필수 및 추천 학습 용품</span>',
+        '                    <p class="text-[11px] text-zinc-400">교재가 빨리 필요하신가요? 아마존 프라임 스튜던트를 무료로 체험해보세요.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">Amazon 파트너로서 적격 구매를 통해 수수료를 받을 수 있습니다.</p>',
     ],
     'hi': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">हमारे बारे में</a>',
@@ -593,6 +617,9 @@ NEW_STATIC_TR = {
         '                हम विश्लेषण के लिए कुकीज़ का उपयोग करते हैं, और विज्ञापन चालू होने के बाद प्रासंगिक विज्ञापन दिखाने के लिए भी। अधिक जानकारी के लिए देखें:',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">अस्वीकार करें</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">सभी स्वीकार करें</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">आवश्यक और अनुशंसित अध्ययन सामग्री</span>',
+        '                    <p class="text-[11px] text-zinc-400">किताबें जल्दी चाहिए? अमेज़न प्राइम स्टूडेंट मुफ़्त में आज़माएं।</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">एक अमेज़ॅन एसोसिएट के रूप में, मैं योग्य खरीद से कमाता हूं।</p>',
     ],
     'ar': [
         '            <a href="/about/" class="text-zinc-600 hover:text-zinc-400 transition">من نحن</a>',
@@ -602,6 +629,9 @@ NEW_STATIC_TR = {
         '                نستخدم ملفات تعريف الارتباط (كوكيز) لأغراض التحليل، وبمجرد تفعيل الإعلانات، لعرض إعلانات ذات صلة. اقرأ',
         '                <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">رفض</button>',
         '                <button id="consent-accept" type="button" class="btn-press flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-pink-600 hover:brightness-110 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg shadow-orange-600/30">قبول الكل</button>',
+        '                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">أدوات الدراسة المطلوبة والموصى بها</span>',
+        '                    <p class="text-[11px] text-zinc-400">هل تحتاج كتبك بسرعة؟ جرب أمازون برايم للطلاب مجانًا.</p>',
+        '                    <p class="text-[10px] text-zinc-500 italic">بصفتي أحد شركاء أمازون، أحقق أرباحًا من عمليات الشراء المؤهلة.</p>',
     ],
 }
 
@@ -658,6 +688,11 @@ T_BLOCKS['es'] = r'''window.T = {
   dropTitleReading: "Leyendo PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook y Yahoo agregan rápidamente tu próxima fecha — "${label}" (${display}). Apple/.ics incluye las ${count} fechas.`,
   calendarModalSubtitleSingle: (label, display) => `Agrega "${label}" (${display}) a tu calendario.`,
+  gearViewButton: "Ver en Amazon",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['fr'] = r'''window.T = {
@@ -697,6 +732,11 @@ T_BLOCKS['fr'] = r'''window.T = {
   dropTitleReading: "Lecture du PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook et Yahoo ajoutent rapidement votre prochaine échéance — « ${label} » (${display}). Apple/.ics inclut les ${count} échéances.`,
   calendarModalSubtitleSingle: (label, display) => `Ajoute « ${label} » (${display}) à votre calendrier.`,
+  gearViewButton: "Voir sur Amazon",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['pt'] = r'''window.T = {
@@ -736,6 +776,11 @@ T_BLOCKS['pt'] = r'''window.T = {
   dropTitleReading: "Lendo PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook e Yahoo adicionam rapidamente seu próximo prazo — "${label}" (${display}). Apple/.ics inclui os ${count} prazos.`,
   calendarModalSubtitleSingle: (label, display) => `Adiciona "${label}" (${display}) ao seu calendário.`,
+  gearViewButton: "Ver na Amazon",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['zh'] = r'''window.T = {
@@ -775,6 +820,11 @@ T_BLOCKS['zh'] = r'''window.T = {
   dropTitleReading: "正在读取 PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google、Outlook 和 Yahoo 将快速添加你的下一个截止日期 — "${label}"（${display}）。Apple/.ics 将包含全部 ${count} 个截止日期。`,
   calendarModalSubtitleSingle: (label, display) => `将"${label}"（${display}）添加到你的日历。`,
+  gearViewButton: "在亚马逊查看",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['de'] = r'''window.T = {
@@ -814,6 +864,11 @@ T_BLOCKS['de'] = r'''window.T = {
   dropTitleReading: "PDF wird gelesen…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook und Yahoo fügen schnell deinen nächsten Termin hinzu — "${label}" (${display}). Apple/.ics enthält alle ${count} Termine.`,
   calendarModalSubtitleSingle: (label, display) => `Füge "${label}" (${display}) zu deinem Kalender hinzu.`,
+  gearViewButton: "Bei Amazon ansehen",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['vi'] = r'''window.T = {
@@ -853,6 +908,11 @@ T_BLOCKS['vi'] = r'''window.T = {
   dropTitleReading: "Đang đọc PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook và Yahoo nhanh chóng thêm hạn chót tiếp theo của bạn — "${label}" (${display}). Apple/.ics bao gồm cả ${count} hạn chót.`,
   calendarModalSubtitleSingle: (label, display) => `Thêm "${label}" (${display}) vào lịch của bạn.`,
+  gearViewButton: "Xem trên Amazon",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['ko'] = r'''window.T = {
@@ -892,6 +952,11 @@ T_BLOCKS['ko'] = r'''window.T = {
   dropTitleReading: "PDF 읽는 중…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook, Yahoo는 다음 마감일 "${label}"(${display})을 빠르게 추가합니다. Apple/.ics에는 ${count}개의 마감일이 모두 포함됩니다.`,
   calendarModalSubtitleSingle: (label, display) => `"${label}"(${display})을 캘린더에 추가합니다.`,
+  gearViewButton: "Amazon에서 보기",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['hi'] = r'''window.T = {
@@ -931,6 +996,11 @@ T_BLOCKS['hi'] = r'''window.T = {
   dropTitleReading: "PDF पढ़ा जा रहा है…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook और Yahoo आपकी अगली डेडलाइन — "${label}" (${display}) — जल्दी से जोड़ देते हैं। Apple/.ics में सभी ${count} डेडलाइन शामिल हैं।`,
   calendarModalSubtitleSingle: (label, display) => `"${label}" (${display}) को अपने कैलेंडर में जोड़ें।`,
+  gearViewButton: "अमेज़न पर देखें",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 T_BLOCKS['ar'] = r'''window.T = {
@@ -970,6 +1040,11 @@ T_BLOCKS['ar'] = r'''window.T = {
   dropTitleReading: "جارٍ قراءة PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `يضيف Google وOutlook وYahoo موعدك النهائي القادم بسرعة — "${label}" (${display}). يتضمن Apple/.ics جميع المواعيد الـ ${count}.`,
   calendarModalSubtitleSingle: (label, display) => `أضف "${label}" (${display}) إلى تقويمك.`,
+  gearViewButton: "عرض على أمازون",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };'''
 
 for _lang in LANG_ORDER:

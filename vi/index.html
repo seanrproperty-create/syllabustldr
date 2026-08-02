@@ -366,6 +366,19 @@
                     <div id="render-policy" class="space-y-2.5"></div>
                 </div>
 
+                <!-- Recommended Study Gear (Amazon affiliate — client-side only) -->
+                <div class="card-block p-4 border-b border-zinc-800/80 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-orange-400/15 flex items-center justify-center">
+                            <i class="fa-solid fa-bag-shopping text-orange-400 text-[10px]"></i>
+                        </span>
+                        <span class="text-[11px] font-bold tracking-[.12em] text-zinc-300 uppercase">Dụng Cụ Học Tập Bắt Buộc &amp; Khuyến Nghị</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-400">Cần sách nhanh chóng? Thử ngay Amazon Prime Student Miễn Phí.</p>
+                    <div id="render-study-gear" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+                    <p class="text-[10px] text-zinc-500 italic">Là một Đối tác Amazon, tôi kiếm được tiền từ các khoản mua hàng đủ điều kiện.</p>
+                </div>
+
                 <!-- VIRAL BANNER (unremovable) -->
                 <div class="relative overflow-hidden bg-gradient-to-r from-orange-500 via-pink-600 to-fuchsia-600 px-5 py-4 flex items-center justify-between shimmer-sweep">
                     <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
@@ -556,6 +569,11 @@ window.T = {
   dropTitleReading: "Đang đọc PDF…",
   calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook và Yahoo nhanh chóng thêm hạn chót tiếp theo của bạn — "${label}" (${display}). Apple/.ics bao gồm cả ${count} hạn chót.`,
   calendarModalSubtitleSingle: (label, display) => `Thêm "${label}" (${display}) vào lịch của bạn.`,
+  gearViewButton: "Xem trên Amazon",
+  gearItemCalculator: "TI-84 Plus CE Graphing Calculator",
+  gearItemMolecularKit: "Organic Chemistry Molecular Model Kit",
+  gearItemNotebook: "Rocketbook Smart Reusable Notebook",
+  gearItemHeadphones: "Anker Soundcore Space One Noise Cancelling Headphones",
 };
 </script>
 
@@ -628,7 +646,12 @@ window.T = {
     dropSubtitleDefault: 'Chạm để chọn hoặc kéo thả tệp vào đây',
     dropTitleReading: 'Reading PDF…',
     calendarModalSubtitleMulti: (label, display, count) => `Google, Outlook & Yahoo quick-add your next deadline — "${label}" (${display}). Apple/.ics grabs all ${count} deadlines at once.`,
-    calendarModalSubtitleSingle: (label, display) => `Adds "${label}" (${display}) to your calendar.`
+    calendarModalSubtitleSingle: (label, display) => `Adds "${label}" (${display}) to your calendar.`,
+    gearViewButton: 'View on Amazon',
+    gearItemCalculator: 'TI-84 Plus CE Graphing Calculator',
+    gearItemMolecularKit: 'Organic Chemistry Molecular Model Kit',
+    gearItemNotebook: 'Rocketbook Smart Reusable Notebook',
+    gearItemHeadphones: 'Anker Soundcore Space One Noise Cancelling Headphones'
   };
   var T = window.T;
 
@@ -999,7 +1022,47 @@ window.T = {
     const grades = extractGradeWeights(text);
     const deadlines = extractDeadlines(text, defaultYear);
     const policy = extractProfessorRules(text);
-    return { course, grades, deadlines, policy };
+    return { course, grades, deadlines, policy, rawText: text };
+  }
+
+  // ---------------------------------------------------------------------
+  // STUDY GEAR — Amazon affiliate recommendations (OneLink tag
+  // ukmauritian02-21). Pure client-side keyword matching against the same
+  // English-language syllabus text the parser above already scans; no
+  // network/LLM call, so this never touches the site's zero-cost model.
+  // Item labels are deliberately left untranslated (T.gearItem*) since
+  // they're brand/model names, and the destination is always
+  // amazon.co.uk regardless of the visitor's UI language.
+  // ---------------------------------------------------------------------
+  const GEAR_MATH_RE = /\b(math|calc|physics|algebra|financ|statist)/i;
+  const GEAR_SCIENCE_RE = /\b(chem|bio|organic|medical)|\b(labs?|laboratory|laboratories)\b/i;
+
+  function pickStudyGear(rawText) {
+    const text = rawText || '';
+    if (GEAR_MATH_RE.test(text)) {
+      return [{ labelKey: 'gearItemCalculator', search_keyword: 'TI-84 Plus CE Graphing Calculator' }];
+    }
+    if (GEAR_SCIENCE_RE.test(text)) {
+      return [{ labelKey: 'gearItemMolecularKit', search_keyword: 'Organic Chemistry Molecular Model Kit' }];
+    }
+    return [
+      { labelKey: 'gearItemNotebook', search_keyword: 'Rocketbook Smart Reusable Notebook' },
+      { labelKey: 'gearItemHeadphones', search_keyword: 'Anker Soundcore Space One Noise Cancelling Headphones' }
+    ];
+  }
+
+  function renderStudyGear(rawText) {
+    const gearEl = document.getElementById('render-study-gear');
+    if (!gearEl) return;
+    const items = pickStudyGear(rawText);
+    gearEl.innerHTML = items.map(item => `
+      <a href="https://www.amazon.co.uk/s?k=${encodeURIComponent(item.search_keyword)}&tag=ukmauritian02-21"
+         target="_blank" rel="noopener noreferrer sponsored nofollow"
+         class="flex flex-col items-center justify-center text-center gap-1.5 p-3 min-h-[48px] rounded-lg bg-zinc-800/60 border border-zinc-700/60 hover:border-orange-400/60 transition-colors">
+        <span class="text-xs font-semibold text-zinc-200">${escapeHtml(T[item.labelKey])}</span>
+        <span class="text-[11px] font-bold text-orange-400">${escapeHtml(T.gearViewButton)}</span>
+      </a>
+    `).join('');
   }
 
   // ---------------------------------------------------------------------
@@ -1063,6 +1126,8 @@ window.T = {
         <span class="text-xs font-semibold text-zinc-300">${escapeHtml(policy.latePolicy)}</span>
       </div>
     `;
+
+    renderStudyGear(data.rawText);
   }
 
   // ---------------------------------------------------------------------
