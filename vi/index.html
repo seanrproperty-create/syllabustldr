@@ -1034,7 +1034,7 @@ window.T = {
   // they're brand/model names, and the destination is always
   // amazon.co.uk regardless of the visitor's UI language.
   // ---------------------------------------------------------------------
-  const GEAR_MATH_RE = /\b(math|calculus|physics|algebra|finance|statistics|stats)\b/i;
+  const GEAR_MATH_RE = /\b(math|mathematics|calculus|calc|physics|algebra|finance|statistics|stats)\b/i;
   // 'organic', 'medical', 'lab'/'laboratory' are deliberately excluded as
   // standalone triggers. 'organic'/'medical' are common humanities
   // vocabulary (bioethics, "organic unity" in aesthetics/Hegel, "medical
@@ -1046,9 +1046,23 @@ window.T = {
   // for recommending a chemistry model kit specifically.
   const GEAR_EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
   const GEAR_SCIENCE_RE = /\b(chemistry|molecular|biology|biological)\b/i;
+  // Scoped to the exact two-word phrase "liberal arts", not single words
+  // like "philosophy"/"history"/"literature"/"humanities" — those are
+  // common in ANY course's boilerplate (a chemistry syllabus's "my
+  // philosophy on late work...", a "History of Mathematics" course, a
+  // biology "literature review" assignment) and would wrongly suppress a
+  // real match if used as a blanket veto. "liberal arts" alone is specific
+  // enough to catch general-education courses without that collateral risk.
+  const GEAR_LIBERAL_ARTS_RE = /\bliberal arts\b/i;
 
   function pickStudyGear(rawText) {
     const text = (rawText || '').replace(GEAR_EMAIL_RE, ' ');
+    if (GEAR_LIBERAL_ARTS_RE.test(text)) {
+      return [
+        { labelKey: 'gearItemNotebook', search_keyword: 'Rocketbook Smart Reusable Notebook' },
+        { labelKey: 'gearItemHeadphones', search_keyword: 'Anker Soundcore Space One Noise Cancelling Headphones' }
+      ];
+    }
     if (GEAR_MATH_RE.test(text)) {
       return [{ labelKey: 'gearItemCalculator', search_keyword: 'TI-84 Plus CE Graphing Calculator' }];
     }
