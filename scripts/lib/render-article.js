@@ -257,9 +257,9 @@ ${sectionsHtml}
             <span class="text-zinc-700">•</span>
             <a href="${BLOG_HUB_URL}" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerBlog)}</a>
             <span class="text-zinc-700">•</span>
-            <a href="/terms-of-service.html" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerTerms)}</a>
+            <a href="/terms-of-service" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerTerms)}</a>
             <span class="text-zinc-700">•</span>
-            <a href="/privacy-policy.html" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerPrivacy)}</a>
+            <a href="/privacy-policy" class="text-zinc-500 hover:text-zinc-300 transition">${escapeHtml(chrome.footerPrivacy)}</a>
         </div>
         <p class="text-[11px] text-zinc-600">${escapeHtml(chrome.copyrightLine)}</p>
         <p class="text-[11px] text-zinc-700 mt-1">${escapeHtml(chrome.operatorLine)}</p>
@@ -270,7 +270,7 @@ ${sectionsHtml}
         <div class="max-w-xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black/50 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <p class="text-xs text-zinc-400 leading-relaxed flex-1">
                 ${escapeHtml(chrome.consentText)}
-                <a href="/privacy-policy.html" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">${escapeHtml(chrome.footerPrivacy)}</a>.
+                <a href="/privacy-policy" class="text-orange-400 hover:text-orange-300 underline underline-offset-2">${escapeHtml(chrome.footerPrivacy)}</a>.
             </p>
             <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                 <button id="consent-reject" type="button" class="btn-press flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-4 py-2 rounded-full border border-zinc-700">${escapeHtml(chrome.consentReject)}</button>
