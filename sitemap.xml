@@ -191,6 +191,12 @@
   </url>
 
   <url>
+    <loc>https://syllabustldr.com/author/sean-ramdin/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
     <loc>https://syllabustldr.com/contact/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
