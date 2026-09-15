@@ -147,7 +147,7 @@ ${buildHreflangBlock(article.slug)}
   "datePublished": "${dates.datePublished}",
   "dateModified": "${dates.dateModified}",
   "inLanguage": "${meta.hreflang}",
-  "author": { "@type": "Organization", "name": "EIGHTFINITY LTD Academic Engineering Team" },
+  "author": { "@type": "Person", "name": "Sean Ramdin", "url": "${SITE_ORIGIN}/author/sean-ramdin/", "sameAs": ["https://www.linkedin.com/in/sean-ramdin-736880413/"] },
   "publisher": { "@type": "Organization", "name": "EIGHTFINITY LTD", "url": "${SITE_ORIGIN}/" },
   "isPartOf": { "@type": "Blog", "name": "SyllabusTLDR Blog", "url": "${BLOG_HUB_URL}" }
 }
